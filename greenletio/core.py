@@ -70,11 +70,11 @@ bridge = GreenletBridge()
 
 
 def async_(fn):
-    if not bridge.running:
-        bridge.start()
-
     @functools.wraps(fn)
     def decorator(*args, **kwargs):
+        if not bridge.running:
+            bridge.start()
+
         async def coro(fn, *args, **kwargs):
             future = asyncio.Future()
 
@@ -90,17 +90,25 @@ def async_(fn):
 
 
 def await_(coro_or_fn):
-    if not bridge.running:
-        bridge.start()
-
     if asyncio.iscoroutine(coro_or_fn):
         # we were given a coroutine --> await it
+        if not bridge.running:
+            bridge.start()
+
         async def run_in_aio(gl):
-            ret = await coro_or_fn
-            bridge.schedule(gl, ret)
+            ret = None
+            error = None
+            try:
+                ret = await coro_or_fn
+            except Exception as exc:
+                error = exc
+            bridge.schedule(gl, (ret, error))
 
         asyncio.create_task(run_in_aio(getcurrent()))
-        return bridge.switch()
+        ret, error = bridge.switch()
+        if error:
+            raise error
+        return ret
     else:
         # assume decorator usage
         @functools.wraps(coro_or_fn)
