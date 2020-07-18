@@ -1,5 +1,7 @@
 # greenletio
 
+[![Build Status](https://travis-ci.org/miguelgrinberg/greenletio.svg?branch=master)](https://travis-ci.org/miguelgrinberg/greenletio)
+
 This project allows synchronous and asynchronous functions to be used together.
 Unlike other methods based on executors and thread or process pools,
 `greenletio` allows synchronous functions to work like their asynchronous
