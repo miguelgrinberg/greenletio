@@ -20,13 +20,14 @@ $ pip install greenletio
 The `async_` function makes a synchronous function awaitable.
 
 ```python
+import asyncio
 from greenletio import async_
 
 def sync_function(arg):
     pass
 
 async def async_function():
-    await async_(sync_function())(42)
+    await async_(sync_function)(42)
 
 asyncio.run(async_function())
 ```
@@ -34,6 +35,7 @@ asyncio.run(async_function())
 This function can also be used as a decorator:
 
 ```python
+import asyncio
 from greenletio import async_
 
 @async_
