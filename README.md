@@ -118,3 +118,5 @@ asynchronous applications.
 Since Mike's code became public we learned of another project combining
 coroutines and greenlets with the same goal called
 [greenback](https://github.com/oremanj/greenback), by Joshua Oreman.
+
+The overall design of `greenletio` is based on [eventlet](https://eventlet.net/).
