@@ -107,10 +107,10 @@ blocking condition is resolved.
 
 ## Previous work
 
-The idea for `greenbackio` originated in a
-[proof-of-concept example](https://gist.github.com/zzzeek/4e89ce6226826e7a8df13e1b573ad354)
-that used greenlets to prevent synchronous code from blocking by Mike Bayer,
-with the intent of applying this technique to allow SQLAlchemy to work in
+The idea for `greenletio` originated in a
+[proof-of-concept gist](https://gist.github.com/zzzeek/4e89ce6226826e7a8df13e1b573ad354)
+by Mike Bayer that used greenlets to prevent synchronous code from blocking.
+The intent was to use this technique to allow SQLAlchemy to work in
 asynchronous applications.
 
 Since Mike's code became public we learned of another project combining
