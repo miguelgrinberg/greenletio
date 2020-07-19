@@ -1,4 +1,5 @@
 import asyncio
+from collections import deque
 import functools
 import sys
 from greenlet import greenlet, getcurrent
@@ -14,7 +15,7 @@ class GreenletBridge:
         self.stopping = False
         self.bridge_greenlet = None
         self.wait_event = None
-        self.scheduled = []
+        self.scheduled = deque()
 
     def schedule(self, gl, *args, **kwargs):
         self.scheduled.append((gl, args, kwargs))
@@ -29,7 +30,7 @@ class GreenletBridge:
             while not self.stopping:
                 self.wait_event.clear()
                 while self.scheduled:
-                    gl, args, kwargs = self.scheduled.pop(0)
+                    gl, args, kwargs = self.scheduled.popleft()
                     gl.switch(*args, **kwargs)
                 await self.wait_event.wait()
             self.running = False
@@ -85,13 +86,13 @@ def async_(fn):
         async def coro(fn, *args, **kwargs):
             future = asyncio.Future()
 
-            def _gl():
+            def gl(future, fn, *args, **kwargs):
                 try:
                     future.set_result(fn(*args, **kwargs))
                 except:  # noqa: E722
                     future.set_exception(sys.exc_info()[1])
 
-            bridge.schedule(greenlet(_gl))
+            bridge.schedule(greenlet(gl), future, fn, *args, **kwargs)
             return await future
 
         return coro(fn, *args, **kwargs)
