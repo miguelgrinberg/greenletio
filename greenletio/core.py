@@ -13,6 +13,7 @@ class GreenletBridge:
         self.starting = False
         self.running = False
         self.stopping = False
+        self.loop = None
         self.bridge_greenlet = None
         self.wait_event = None
         self.scheduled = deque()
@@ -42,6 +43,7 @@ class GreenletBridge:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
+        self.loop = loop
         self.wait_event = asyncio.Event()
         if not loop.is_running():
             # neither the loop nor the bridge are running
@@ -115,7 +117,7 @@ def await_(coro_or_fn):
                 exc_info = sys.exc_info()
             bridge.schedule(gl, (ret, exc_info))
 
-        asyncio.get_event_loop().create_task(run_in_aio(getcurrent()))
+        bridge.loop.create_task(run_in_aio(getcurrent()))
         ret, exc_info = bridge.switch()
         if exc_info:
             raise exc_info[0].with_traceback(exc_info[1], exc_info[2])
