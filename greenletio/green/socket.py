@@ -1,12 +1,12 @@
 import errno
 from greenletio.io import wait_to_read, wait_to_write
 from greenletio.patcher import copy_globals
-import socket as __original_socket
+import socket as _original_socket_
 
-copy_globals(__original_socket, globals())
+copy_globals(_original_socket_, globals())
 
 
-class socket(__original_socket.socket):
+class socket(_original_socket_.socket):
     def _nonblocking_read(self, method, *args, **kwargs):
         self.setblocking(False)
         while True:

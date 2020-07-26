@@ -13,7 +13,7 @@ def copy_globals(source_module, globals_dict):
 @contextmanager
 def patch_blocking(modules=None):
     if modules is None:
-        modules = ['socket', 'ssl']
+        modules = ['socket', 'ssl', 'threading', 'time']
     for module in modules:
         if module not in patched:
             patched[module] = getattr(

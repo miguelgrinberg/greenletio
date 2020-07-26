@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 from collections import deque
 import functools
 import sys
@@ -56,6 +57,7 @@ class GreenletBridge:
 
     def start(self):
         assert not self.running and not self.starting
+        atexit.register(self.stop)
         self.reset()
         self.starting = True
         self.schedule(getcurrent())
@@ -129,3 +131,12 @@ def await_(coro_or_fn):
             return await_(coro_or_fn(*args, **kwargs))
 
         return decorator
+
+
+def spawn(fn, *args, **kwargs):
+    if not bridge.running:
+        bridge.start()
+    gl = greenlet(fn)
+    gl.parent = bridge.bridge_greenlet
+    bridge.schedule(gl, *args, **kwargs)
+    return gl

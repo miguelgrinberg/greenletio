@@ -1,16 +1,16 @@
 from greenletio.io import wait_to_read, wait_to_write
 from greenletio.patcher import copy_globals
 from ssl import SSLWantReadError, SSLWantWriteError, CERT_NONE, PROTOCOL_TLS
-import ssl as __original_ssl
+import ssl as _original_ssl_
 
-copy_globals(__original_ssl, globals())
+copy_globals(_original_ssl_, globals())
 
 
-class SSLContext(__original_ssl.SSLContext):
+class SSLContext(_original_ssl_.SSLContext):
     pass
 
 
-class SSLSocket(__original_ssl.SSLSocket):
+class SSLSocket(_original_ssl_.SSLSocket):
     @classmethod
     def _create(cls, *args, **kwargs):
         do_handshake_on_connect = kwargs.get('do_handshake_on_connect')
