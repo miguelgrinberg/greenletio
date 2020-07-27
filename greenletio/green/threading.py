@@ -78,7 +78,7 @@ class RLock(Lock):
             super().release()
 
 
-class Condition(_AcquireMixin, asyncio.Condition):
+class Condition(_AcquireMixin):
     def __init__(self, lock=None):
         if lock is None:
             lock = RLock()
@@ -148,7 +148,7 @@ class Condition(_AcquireMixin, asyncio.Condition):
     def notify_all(self):
         self.notify(len(self._waiters))
 
-    notifyAll = asyncio.Condition.notify_all
+    notifyAll = notify_all
 
 
 class Semaphore(_AcquireMixin, asyncio.Semaphore):

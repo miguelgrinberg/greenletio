@@ -107,7 +107,7 @@ def async_(fn):
 def await_(coro_or_fn):
     if asyncio.iscoroutine(coro_or_fn):
         # we were given a coroutine --> await it
-        if not bridge.running:
+        if not bridge.running and not bridge.starting:
             bridge.start()
 
         async def run_in_aio(gl):
@@ -134,7 +134,7 @@ def await_(coro_or_fn):
 
 
 def spawn(fn, *args, **kwargs):
-    if not bridge.running:
+    if not bridge.running and not bridge.starting:
         bridge.start()
     gl = greenlet(fn)
     gl.parent = bridge.bridge_greenlet

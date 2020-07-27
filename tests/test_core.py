@@ -1,11 +1,11 @@
 import asyncio
 import unittest
 import pytest
-from greenletio import async_, await_
+from greenletio import async_, await_, spawn
 from greenletio.core import bridge
 
 
-class TestGreenletio(unittest.TestCase):
+class TestCore(unittest.TestCase):
     def setUp(self):
         bridge.reset()
 
@@ -109,3 +109,23 @@ class TestGreenletio(unittest.TestCase):
             assert str(exc.value) == 'foo'
 
         asyncio.get_event_loop().run_until_complete(b())
+
+    def test_spawn(self):
+        var = 0
+
+        def a(arg):
+            nonlocal var
+            var += arg
+
+        def b(arg):
+            nonlocal var
+            var += arg
+
+        async def c():
+            spawn(a, 40)
+            spawn(b, 2)
+            while bridge.scheduled:
+                await asyncio.sleep(0.1)
+
+        asyncio.get_event_loop().run_until_complete(c())
+        assert var == 42
