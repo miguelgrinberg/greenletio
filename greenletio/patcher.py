@@ -32,3 +32,30 @@ def patch_blocking(modules=None):
     for module in modules:
         sys.modules[module] = saved[module]
     del sys.modules['__greenletio_patched__']
+
+
+def patch_psycopg2():
+    import psycopg2
+    from psycopg2.extensions import POLL_OK, POLL_READ, POLL_WRITE
+    from greenletio.io import wait_to_read, wait_to_write
+
+    if not hasattr(psycopg2.extensions, 'set_wait_callback'):
+        raise ImportError(
+            "support for coroutines not available in this Psycopg version (%s)"
+            % psycopg2.__version__)
+
+    def psycopg2_wait_callback(conn):
+        fd = conn.fileno()
+        while True:
+            state = conn.poll()
+            if state == POLL_OK:
+                break
+            elif state == POLL_READ:
+                wait_to_read(fd)
+            elif state == POLL_WRITE:
+                wait_to_write(fd)
+            else:
+                raise psycopg2.OperationalError(
+                    "Bad result from poll: %r" % state)
+
+    psycopg2.extensions.set_wait_callback(psycopg2_wait_callback)
