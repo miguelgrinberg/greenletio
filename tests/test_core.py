@@ -122,10 +122,10 @@ class TestCore(unittest.TestCase):
             var += arg
 
         async def c():
-            spawn(a, 40)
-            spawn(b, 2)
-            while bridge.scheduled:
-                await asyncio.sleep(0.1)
+            ga = spawn(a, 40)
+            gb = spawn(b, 2)
+            while not ga.dead or not gb.dead:
+                await asyncio.sleep(0)
 
         asyncio.get_event_loop().run_until_complete(c())
         assert var == 42

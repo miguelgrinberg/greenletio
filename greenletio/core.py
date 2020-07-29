@@ -36,6 +36,7 @@ class GreenletBridge:
                     gl.switch(*args, **kwargs)
                 await self.wait_event.wait()
             self.running = False
+            return True
 
         # get the asyncio loop
         try:
@@ -68,7 +69,9 @@ class GreenletBridge:
             self.stopping = True
             self.wait_event.set()
             self.bridge_greenlet.parent = getcurrent()
-            self.bridge_greenlet.switch()
+            while not self.bridge_greenlet.dead:  # pragma: no cover
+                if self.bridge_greenlet.switch():
+                    break
 
     def switch(self):
         if self.bridge_greenlet is None:

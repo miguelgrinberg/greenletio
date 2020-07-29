@@ -17,9 +17,8 @@ class TestSocket(unittest.TestCase):
 
         def server():
             server_socket = socket.socket()
-            print('a')
-            server_socket.bind(('127.0.0.1', 7000))
             server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server_socket.bind(('127.0.0.1', 7000))
             server_socket.listen(5)
             conn, _ = server_socket.accept()
             data = conn.recv(1024)
@@ -28,7 +27,7 @@ class TestSocket(unittest.TestCase):
             server_socket.close()
 
         def client():
-            global var
+            nonlocal var
             client_socket = socket.socket()
             client_socket.connect(('127.0.0.1', 7000))
             client_socket.send(b'hello')
@@ -36,10 +35,11 @@ class TestSocket(unittest.TestCase):
             client_socket.close()
 
         async def main():
+            nonlocal var
             spawn(server)
             spawn(client)
             while var is None:
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0)
 
         asyncio.get_event_loop().run_until_complete(main())
         assert var == b'HELLO'
