@@ -26,17 +26,19 @@ class GreenletBridge:
 
     def run(self):
         async def async_run():
+            if self.bridge_greenlet != getcurrent():
+                self.bridge_greenlet = getcurrent()
             self.starting = False
             self.stopping = False
             self.running = True
-            while not self.stopping:
+            while not self.stopping or self.scheduled:
                 self.wait_event.clear()
                 while self.scheduled:
                     gl, args, kwargs = self.scheduled.popleft()
                     gl.switch(*args, **kwargs)
-                await self.wait_event.wait()
+                if not self.stopping:
+                    await self.wait_event.wait()
             self.running = False
-            return True
 
         # get the asyncio loop
         try:
@@ -68,10 +70,10 @@ class GreenletBridge:
         if self.running:
             self.stopping = True
             self.wait_event.set()
-            self.bridge_greenlet.parent = getcurrent()
-            while not self.bridge_greenlet.dead:  # pragma: no cover
-                if self.bridge_greenlet.switch():
-                    break
+            if self.bridge_greenlet != getcurrent():
+               self.bridge_greenlet.parent = getcurrent()
+               while not self.bridge_greenlet.dead:  # pragma: no cover
+                  self.bridge_greenlet.switch()
 
     def switch(self):
         if self.bridge_greenlet is None:
@@ -139,7 +141,11 @@ def await_(coro_or_fn):
 def spawn(fn, *args, **kwargs):
     if not bridge.running and not bridge.starting:
         bridge.start()
-    gl = greenlet(fn)
-    gl.parent = bridge.bridge_greenlet
+
+    def _fn(*args, **kwargs):
+        fn(*args, **kwargs)
+        getcurrent().parent = bridge.bridge_greenlet
+
+    gl = greenlet(_fn)
     bridge.schedule(gl, *args, **kwargs)
     return gl
