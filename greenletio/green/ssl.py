@@ -69,8 +69,11 @@ class SSLSocket(_original_ssl_.SSLSocket):
     def send(self, *args, **kwargs):
         return self._nonblocking_io(super().send, *args, **kwargs)
 
-    def sendall(self, *args, **kwargs):
-        return self._nonblocking_io(super().sendall, *args, **kwargs)
+    def sendall(self, data, flags=0):
+        tail = self.send(data, flags)
+        len_data = len(data)
+        while tail < len_data:  # pragma: no cover
+            tail += self.send(data[tail:], flags)
 
     def sendto(self, *args, **kwargs):
         return self._nonblocking_io(super().sendto, *args, **kwargs)
@@ -82,7 +85,7 @@ class SSLSocket(_original_ssl_.SSLSocket):
         return self._nonblocking_io(super().sendmsg_afalg, *args, **kwargs)
 
     def sendfile(self, *args, **kwargs):
-        return self._nonblocking_io(super().sendfile, *args, **kwargs)
+        raise RuntimeError('socket.sendfile is not supported')
 
 
 SSLContext.sslsocket_class = SSLSocket

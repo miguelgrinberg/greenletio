@@ -14,9 +14,9 @@ class socket(_original_socket_.socket):
                 ret = method(*args, **kwargs)
             except (OSError, BlockingIOError) as exc:
                 err = exc.errno
-                if err in (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINPROGRESS):
+                if err in (errno.EAGAIN, errno.EWOULDBLOCK):
                     wait_to_read(self.fileno())
-                else:
+                else:  # pragma: no cover
                     raise
             else:
                 break
@@ -32,9 +32,9 @@ class socket(_original_socket_.socket):
                 ret = None
                 if err in (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINPROGRESS):
                     wait_to_write(self.fileno())
-                    if err == errno.EINPROGRESS:
+                    if err == errno.EINPROGRESS:  # pragma: no cover
                         break
-                else:
+                else:  # pragma: no cover
                     raise
             else:
                 break
@@ -74,8 +74,11 @@ class socket(_original_socket_.socket):
     def send(self, *args, **kwargs):
         return self._nonblocking_write(super().send, *args, **kwargs)
 
-    def sendall(self, *args, **kwargs):
-        return self._nonblocking_write(super().sendall, *args, **kwargs)
+    def sendall(self, data, flags=0):
+        tail = self.send(data, flags)
+        len_data = len(data)
+        while tail < len_data:  # pragma: no cover
+            tail += self.send(data[tail:], flags)
 
     def sendto(self, *args, **kwargs):
         return self._nonblocking_write(super().sendto, *args, **kwargs)
@@ -87,4 +90,4 @@ class socket(_original_socket_.socket):
         return self._nonblocking_write(super().sendmsg_afalg, *args, **kwargs)
 
     def sendfile(self, *args, **kwargs):
-        return self._nonblocking_write(super().sendfile, *args, **kwargs)
+        raise RuntimeError('socket.sendfile is not supported')
