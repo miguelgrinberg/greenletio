@@ -18,20 +18,20 @@ def patch_blocking(modules=None):
         if module not in patched:
             patched[module] = getattr(
                 __import__('greenletio.green.' + module).green, module)
-    if '__greenletio_patched__' in sys.modules:
-        # recursive patching
-        yield
-        return
-
     saved = {}
-    for module in modules:
-        saved[module] = sys.modules[module]
-        sys.modules[module] = patched[module]
-    sys.modules['__greenletio_patched__'] = True
+    saved_module_list = list(sys.modules.keys()).copy()
+    if '__greenletio_patched__' not in sys.modules:
+        for module in modules:
+            if module in sys.modules:
+                saved[module] = sys.modules[module]
+            sys.modules[module] = patched[module]
+        sys.modules['__greenletio_patched__'] = True
     yield
-    for module in modules:
+    for module in saved:
         sys.modules[module] = saved[module]
-    del sys.modules['__greenletio_patched__']
+    for module in list(sys.modules.keys()).copy():
+        if module not in saved_module_list:
+            del sys.modules[module]
 
 
 def patch_psycopg2():
@@ -39,12 +39,13 @@ def patch_psycopg2():
     from psycopg2.extensions import POLL_OK, POLL_READ, POLL_WRITE
     from greenletio.io import wait_to_read, wait_to_write
 
-    if not hasattr(psycopg2.extensions, 'set_wait_callback'):
+    if not hasattr(psycopg2.extensions,
+                   'set_wait_callback'):  # pragma: no cover
         raise ImportError(
             "support for coroutines not available in this Psycopg version (%s)"
             % psycopg2.__version__)
 
-    def psycopg2_wait_callback(conn):
+    def psycopg2_wait_callback(conn):  # pragma: no cover
         fd = conn.fileno()
         while True:
             state = conn.poll()
