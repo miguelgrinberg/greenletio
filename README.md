@@ -84,6 +84,35 @@ Note that synchronous functions used in asynchronous applications must follow
 the rules that apply to asynchronous functions with regards to not calling any
 blocking code.
 
+### spawn
+
+The `spawn` function launches a synchronous Python function asynchronously as
+a greenlet. The new greenlet (and any function called from it) can use the
+`await_` function.
+
+### green.*
+
+The modules under `greenletio.green` are drop-in replacements of the Python
+standard library modules of the same name, implemented using the `async_`,
+`await_` and `spaen` primitives.
+
+The goal is to provide replacements for all the blocking functions in the
+standard library, so that code written as blocking can be used asynchronously.
+
+Currently implemented modules are `socket`, `ssl`, `threading`, `queue`, and
+`time`.
+
+### patch_blocking
+
+The `patch_blocking` context manager can be used to import code written for
+the Python standard library with all the blocking functions redirected to
+their `green.*` replacements.
+
+### patch_psycopg2
+
+The `patch_psycopg2` function configures psycopg2 to access Postgres database
+in non-blocking mode.
+
 ## Why?
 
 Porting an application to asyncio is in general very complicated, as it
