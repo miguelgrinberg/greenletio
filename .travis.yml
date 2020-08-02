@@ -2,7 +2,7 @@ dist: xenial
 language: python
 matrix:
     include:
-        - python: 3.7
+        - python: 3.8
           env: TOXENV=flake8
         - python: 3.6
           env: TOXENV=py36

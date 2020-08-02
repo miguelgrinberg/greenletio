@@ -9,6 +9,7 @@ from greenlet import greenlet, getcurrent
 class GreenletBridge:
     def __init__(self):
         self.reset()
+        self.wait_event = None
 
     def reset(self):
         self.starting = False
@@ -16,7 +17,6 @@ class GreenletBridge:
         self.stopping = False
         self.loop = None
         self.bridge_greenlet = None
-        self.wait_event = None
         self.scheduled = deque()
 
     def schedule(self, gl, *args, **kwargs):
@@ -71,9 +71,9 @@ class GreenletBridge:
             self.stopping = True
             self.wait_event.set()
             if self.bridge_greenlet != getcurrent():
-               self.bridge_greenlet.parent = getcurrent()
-               while not self.bridge_greenlet.dead:  # pragma: no cover
-                  self.bridge_greenlet.switch()
+                self.bridge_greenlet.parent = getcurrent()
+                while not self.bridge_greenlet.dead:  # pragma: no cover
+                    self.bridge_greenlet.switch()
 
     def switch(self):
         if self.bridge_greenlet is None:

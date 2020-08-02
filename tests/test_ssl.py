@@ -11,7 +11,7 @@ from greenletio.green import socket, ssl
 # -nodes -subj "/CN=example.com"
 #
 # To generate client certificate:
-# openssl req -x509 -newkey rsa:4096 -keyout client.key -out client.crt 
+# openssl req -x509 -newkey rsa:4096 -keyout client.key -out client.crt
 # -days 365 -nodes -subj "/CN=example.com"
 
 

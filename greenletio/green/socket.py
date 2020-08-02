@@ -1,6 +1,14 @@
 import errno
+import os
 from greenletio.io import wait_to_read, wait_to_write
 from greenletio.patcher import copy_globals
+from socket import _GLOBAL_DEFAULT_TIMEOUT, SOCK_STREAM, AF_INET, AF_INET6, \
+    IPPROTO_IPV6, IPV6_V6ONLY, SOL_SOCKET, SO_REUSEADDR, SO_REUSEPORT, \
+    error, getaddrinfo, _socket, has_ipv6
+try:
+    from socket import has_dualstack_ipv6
+except ImportError:  # pragma: no cover
+    pass
 import socket as _original_socket_
 
 copy_globals(_original_socket_, globals())
@@ -91,8 +99,23 @@ class socket(_original_socket_.socket):
         raise RuntimeError('socket.sendfile is not supported')
 
 
+# The create_connection and create_server functions below are identical copies
+# to those in the Python 3.8. They are included here to ensure they
+# instantiate the green versions of the socket class.
+
 def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT,
                       source_address=None):  # pragma: no cover
+    """Connect to *address* and return the socket object.
+    Convenience function.  Connect to *address* (a 2-tuple ``(host,
+    port)``) and return the socket object.  Passing the optional
+    *timeout* parameter will set the timeout on the socket instance
+    before attempting to connect.  If no *timeout* is supplied, the
+    global default timeout setting returned by :func:`getdefaulttimeout`
+    is used.  If *source_address* is set it must be a tuple of (host, port)
+    for the socket to bind as a source address before making the connection.
+    A host of '' or port 0 tells the OS to use the default.
+    """
+
     host, port = address
     err = None
     for res in getaddrinfo(host, port, 0, SOCK_STREAM):
@@ -126,6 +149,21 @@ def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT,
 
 def create_server(address, *, family=AF_INET, backlog=None, reuse_port=False,
                   dualstack_ipv6=False):  # pragma: no cover
+    """Convenience function which creates a SOCK_STREAM type socket
+    bound to *address* (a 2-tuple (host, port)) and return the socket
+    object.
+    *family* should be either AF_INET or AF_INET6.
+    *backlog* is the queue size passed to socket.listen().
+    *reuse_port* dictates whether to use the SO_REUSEPORT socket option.
+    *dualstack_ipv6*: if true and the platform supports it, it will
+    create an AF_INET6 socket able to accept both IPv4 or IPv6
+    connections. When false it will explicitly disable this option on
+    platforms that enable it by default (e.g. Linux).
+    >>> with create_server(('', 8000)) as server:
+    ...     while True:
+    ...         conn, addr = server.accept()
+    ...         # handle new connection
+    """
     if reuse_port and not hasattr(_socket, "SO_REUSEPORT"):
         raise ValueError("SO_REUSEPORT not supported on this platform")
     if dualstack_ipv6:
@@ -135,11 +173,22 @@ def create_server(address, *, family=AF_INET, backlog=None, reuse_port=False,
             raise ValueError("dualstack_ipv6 requires AF_INET6 family")
     sock = socket(family, SOCK_STREAM)
     try:
+        # Note about Windows. We don't set SO_REUSEADDR because:
+        # 1) It's unnecessary: bind() will succeed even in case of a
+        # previous closed socket on the same address and still in
+        # TIME_WAIT state.
+        # 2) If set, another socket is free to bind() on the same
+        # address, effectively preventing this one from accepting
+        # connections. Also, it may set the process in a state where
+        # it'll no longer respond to any signals or graceful kills.
+        # See: msdn2.microsoft.com/en-us/library/ms740621(VS.85).aspx
         if os.name not in ('nt', 'cygwin') and \
                 hasattr(_socket, 'SO_REUSEADDR'):
             try:
                 sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             except error:
+                # Fail later on bind(), for platforms which may not
+                # support this option.
                 pass
         if reuse_port:
             sock.setsockopt(SOL_SOCKET, SO_REUSEPORT, 1)

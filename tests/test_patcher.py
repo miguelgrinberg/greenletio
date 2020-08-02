@@ -1,7 +1,6 @@
 import platform
 import socket
 import sys
-import threading
 import unittest
 from greenletio import patch_blocking, patch_psycopg2
 from greenletio.green import socket as green_socket, \
@@ -59,7 +58,7 @@ class TestPatcher(unittest.TestCase):
         assert '__greenletio_patched__' not in sys.modules
 
     @unittest.skipIf(platform.python_implementation() != 'CPython',
-                    'psycopg2-binary does not install on pypy3')
+                     'psycopg2-binary does not install on pypy3')
     def test_patch_psycopg2(self):
         import psycopg2
         assert psycopg2.extensions.get_wait_callback() is None
