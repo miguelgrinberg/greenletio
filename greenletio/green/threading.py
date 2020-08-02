@@ -15,7 +15,7 @@ def get_ident():
     return id(greenlet.getcurrent())
 
 
-class _AcquireMixin:
+class _LockMixin:
     def acquire(self, blocking=True, timeout=None):
         if not blocking and self.locked():
             return False
@@ -34,7 +34,7 @@ class _AcquireMixin:
         return self.release()
 
 
-class Lock(_AcquireMixin, asyncio.Lock):
+class Lock(_LockMixin, asyncio.Lock):
     pass
 
 
@@ -78,7 +78,7 @@ class RLock(Lock):
             super().release()
 
 
-class Condition(_AcquireMixin):
+class Condition(_LockMixin):
     def __init__(self, lock=None):
         if lock is None:
             lock = RLock()
@@ -151,11 +151,11 @@ class Condition(_AcquireMixin):
     notifyAll = notify_all
 
 
-class Semaphore(_AcquireMixin, asyncio.Semaphore):
+class Semaphore(_LockMixin, asyncio.Semaphore):
     pass
 
 
-class BoundedSemaphore(_AcquireMixin, asyncio.BoundedSemaphore):
+class BoundedSemaphore(_LockMixin, asyncio.BoundedSemaphore):
     pass
 
 

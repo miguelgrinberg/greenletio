@@ -12,14 +12,14 @@ def copy_globals(source_module, globals_dict):
 
 @contextmanager
 def patch_blocking(modules=None):
+    saved = {}
+    saved_module_list = list(sys.modules.keys()).copy()
     if modules is None:
-        modules = ['socket', 'ssl', 'threading', 'time']
+        modules = ['queue', 'socket', 'ssl', 'threading', 'time']
     for module in modules:
         if module not in patched:
             patched[module] = getattr(
                 __import__('greenletio.green.' + module).green, module)
-    saved = {}
-    saved_module_list = list(sys.modules.keys()).copy()
     if '__greenletio_patched__' not in sys.modules:
         for module in modules:
             if module in sys.modules:

@@ -4,7 +4,7 @@ from greenletio.core import bridge
 from greenletio.green import threading, time
 
 
-class TestSocket(unittest.TestCase):
+class TestThreading(unittest.TestCase):
     def setUp(self):
         bridge.reset()
 
