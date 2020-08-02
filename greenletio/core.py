@@ -110,8 +110,8 @@ def async_(fn):
 
 
 def await_(coro_or_fn):
-    if asyncio.iscoroutine(coro_or_fn):
-        # we were given a coroutine --> await it
+    if asyncio.iscoroutine(coro_or_fn) or asyncio.isfuture(coro_or_fn):
+        # we were given an awaitable --> await it
         if not bridge.running and not bridge.starting:
             bridge.start()
 

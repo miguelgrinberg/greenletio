@@ -6,5 +6,5 @@ import time as _original_time_
 copy_globals(_original_time_, globals())
 
 
-def sleep(seconds):
+def sleep(seconds):  # pragma: no cover
     await_(asyncio.sleep(seconds))

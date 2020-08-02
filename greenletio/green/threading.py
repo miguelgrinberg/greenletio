@@ -44,7 +44,7 @@ class RLock(Lock):
         self.owner = None
         self.count = 0
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         owner = self.owner
         try:
             owner = _active[owner].name
@@ -88,7 +88,7 @@ class Condition(_AcquireMixin):
         self.release = lock.release
         self._waiters = collections.deque()
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         res = super().__repr__()
         extra = 'locked' if self.locked() else 'unlocked'
         if self._waiters:
@@ -108,8 +108,8 @@ class Condition(_AcquireMixin):
                     await_(fut)
                 else:
                     try:
-                        await_(asyncio.wait_for([fut], timeout))
-                    except asyncio.CancelledError:
+                        await_(asyncio.wait_for(fut, timeout))
+                    except asyncio.TimeoutError:
                         return False
                 return True
             finally:
@@ -120,9 +120,9 @@ class Condition(_AcquireMixin):
                 try:
                     self.acquire()
                     break
-                except asyncio.CancelledError:
+                except asyncio.CancelledError:  # pragma: no cover
                     cancelled = True
-            if cancelled:
+            if cancelled:  # pragma: no cover
                 raise asyncio.CancelledError
 
     def wait_for(self, predicate, timeout=None):
@@ -138,10 +138,10 @@ class Condition(_AcquireMixin):
 
         idx = 0
         for fut in self._waiters:
-            if idx >= n:
+            if idx >= n:  # pragma: no cover
                 break
 
-            if not fut.done():
+            if not fut.done():  # pragma: no cover
                 idx += 1
                 fut.set_result(False)
 
@@ -201,7 +201,7 @@ class Thread(_original_threading_.Thread):
         self._task = None
 
     def start(self):
-        if not self._initialized:
+        if not self._initialized:  # pragma: no cover
             raise RuntimeError("thread.__init__() not called")
 
         if self._started.is_set():
@@ -224,7 +224,7 @@ class Thread(_original_threading_.Thread):
             self._ended.set()
 
     def join(self, timeout=None):
-        if not self._initialized:
+        if not self._initialized:  # pragma: no cover
             raise RuntimeError("Thread.__init__() not called")
         if not self._started.is_set():
             raise RuntimeError("cannot join thread before it is started")
@@ -235,7 +235,7 @@ class Thread(_original_threading_.Thread):
 
     def is_alive(self):
         assert self._initialized, "Thread.__init__() not called"
-        return self._is_stopped or not self._started.is_set()
+        return not self._is_stopped and self._started.is_set()
 
 
 class _DummyThread(Thread):
@@ -246,14 +246,14 @@ class _DummyThread(Thread):
         self._set_ident()
         _active[self._ident] = self
 
-    def _stop(self):
+    def _stop(self):  # pragma: no cover
         pass
 
-    def is_alive(self):
+    def is_alive(self):  # pragma: no cover
         assert not self._is_stopped and self._started.is_set()
         return True
 
-    def join(self, timeout=None):
+    def join(self, timeout=None):  # pragma: no cover
         assert False, "cannot join a dummy thread"
 
 
@@ -264,6 +264,26 @@ def current_thread():
         return _DummyThread()
 
 
+class Timer(Thread):
+    def __init__(self, interval, function, args=None, kwargs=None):
+        Thread.__init__(self)
+        self.interval = interval
+        self.function = function
+        self.args = args if args is not None else []
+        self.kwargs = kwargs if kwargs is not None else {}
+        self.finished = Event()
+
+    def cancel(self):
+        """Stop the timer if it hasn't finished yet."""
+        self.finished.set()
+
+    def run(self):
+        self.finished.wait(self.interval)
+        if not self.finished.is_set():
+            self.function(*self.args, **self.kwargs)
+        self.finished.set()
+
+
 class _localbase(object):
     __slots__ = '_local__args', '_local__greens'
 
@@ -271,7 +291,8 @@ class _localbase(object):
         self = object.__new__(cls)
         object.__setattr__(self, '_local__args', (args, kw))
         object.__setattr__(self, '_local__greens', weakref.WeakKeyDictionary())
-        if (args or kw) and (cls.__init__ is object.__init__):
+        if (args or kw) and \
+                (cls.__init__ is object.__init__):  # pragma: no cover
             raise TypeError("Initialization arguments are not supported")
         return self
 
