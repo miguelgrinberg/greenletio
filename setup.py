@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="greenletio",
-    version="0.0.4",
+    version="0.0.5",
     author="Miguel Grinberg",
     author_email="miguel.grinberg@gmail.com",
     description="Asyncio integration with sync code using greenlets.",
