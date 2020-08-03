@@ -94,12 +94,12 @@ a greenlet. The new greenlet (and any function called from it) can use the
 
 The modules under `greenletio.green` are drop-in replacements of the Python
 standard library modules of the same name, implemented using the `async_`,
-`await_` and `spaen` primitives.
+`await_` and `spawn` primitives.
 
 The goal is to provide replacements for all the blocking functions in the
 standard library, so that code written as blocking can be used asynchronously.
 
-Currently implemented modules are `socket`, `ssl`, `threading`, `queue`, and
+Currently implemented modules are `socket`, `ssl`, `threading`, and
 `time`.
 
 ### patch_blocking
