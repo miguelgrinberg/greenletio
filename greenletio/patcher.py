@@ -15,7 +15,7 @@ def patch_blocking(modules=None):
     saved = {}
     saved_module_list = list(sys.modules.keys()).copy()
     if modules is None:
-        modules = ['queue', 'socket', 'ssl', 'threading', 'time']
+        modules = ['socket', 'ssl', 'threading', 'time']
     for module in modules:
         if module not in patched:
             patched[module] = getattr(
