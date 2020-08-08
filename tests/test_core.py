@@ -57,12 +57,46 @@ class TestCore(unittest.TestCase):
         def b(arg):
             return await_(a(arg))
 
-        async def c(arg):
+        @async_
+        def c(arg):
+            return arg
+
+        async def d(arg):
+            assert await(c(arg)) == arg
             return await b(arg)
 
-        ret = asyncio.get_event_loop().run_until_complete(c(42))
+        ret = asyncio.get_event_loop().run_until_complete(d(42))
         assert ret == 42
         assert var == 42
+
+    def test_async_await_exception(self):
+        @async_
+        def a(arg):
+            raise RuntimeError(arg)
+
+        async def b(arg):
+            with pytest.raises(RuntimeError) as error:
+                await a(arg)
+            assert type(error.value) == RuntimeError and \
+                str(error.value) == '42'
+
+        asyncio.get_event_loop().run_until_complete(b(42))
+
+    def test_async_await_exception2(self):
+        async def a(arg):
+            raise RuntimeError(arg)
+
+        @async_
+        def b(arg):
+            with pytest.raises(RuntimeError) as error:
+                await_(a(arg))
+            assert type(error.value) == RuntimeError and \
+                str(error.value) == '42'
+
+        async def c(arg):
+            await b(arg)
+
+        asyncio.get_event_loop().run_until_complete(c(42))
 
     def test_gather_with_external_loop(self):
         var = 0

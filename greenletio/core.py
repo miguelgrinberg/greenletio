@@ -36,8 +36,9 @@ class GreenletBridge:
                 while self.scheduled:
                     gl, args, kwargs = self.scheduled.popleft()
                     gl.switch(*args, **kwargs)
-                if not self.stopping:
-                    await self.wait_event.wait()
+                if self.stopping:  # pragma: no cover
+                    break
+                await self.wait_event.wait()
             self.running = False
 
         # get the asyncio loop
@@ -86,25 +87,28 @@ class GreenletBridge:
 bridge = GreenletBridge()
 
 
+async def _run_greenlet_in_aio(gl, args=None, kwargs=None, coro=None):
+    gl._greenletio_running = True
+    if coro is None:
+        coro = gl.switch(*args, **kwargs)
+    while gl and coro != ():
+        ret = None
+        try:
+            ret = await coro
+        except:  # noqa: E722
+            coro = gl.throw(*sys.exc_info())
+        else:
+            coro = gl.switch(ret)
+    del gl._greenletio_running
+    return coro
+
+
 def async_(fn):
     @functools.wraps(fn)
     def decorator(*args, **kwargs):
         if not bridge.running and not bridge.starting:
             bridge.start()
-
-        async def coro(fn, *args, **kwargs):
-            future = asyncio.Future()
-
-            def gl(future, fn, *args, **kwargs):
-                try:
-                    future.set_result(fn(*args, **kwargs))
-                except:  # noqa: E722
-                    future.set_exception(sys.exc_info()[1])
-
-            bridge.schedule(greenlet(gl), future, fn, *args, **kwargs)
-            return await future
-
-        return coro(fn, *args, **kwargs)
+        return _run_greenlet_in_aio(greenlet(fn), args=args, kwargs=kwargs)
 
     return decorator
 
@@ -115,20 +119,12 @@ def await_(coro_or_fn):
         if not bridge.running and not bridge.starting:
             bridge.start()
 
-        async def run_in_aio(gl):
-            ret = None
-            exc_info = None
-            try:
-                ret = await coro_or_fn
-            except:  # noqa: E722
-                exc_info = sys.exc_info()
-            bridge.schedule(gl, (ret, exc_info))
-
-        bridge.loop.create_task(run_in_aio(getcurrent()))
-        ret, exc_info = bridge.switch()
-        if exc_info:
-            raise exc_info[0].with_traceback(exc_info[1], exc_info[2])
-        return ret
+        gl = getcurrent()
+        if not hasattr(gl, '_greenletio_running'):
+            bridge.loop.create_task(_run_greenlet_in_aio(gl, coro=coro_or_fn))
+            return bridge.switch()
+        else:
+            return bridge.bridge_greenlet.switch(coro_or_fn)
     else:
         # assume decorator usage
         @functools.wraps(coro_or_fn)
