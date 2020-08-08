@@ -139,8 +139,8 @@ def spawn(fn, *args, **kwargs):
         bridge.start()
 
     def _fn(*args, **kwargs):
-        fn(*args, **kwargs)
         getcurrent().parent = bridge.bridge_greenlet
+        fn(*args, **kwargs)
 
     gl = greenlet(_fn)
     bridge.schedule(gl, *args, **kwargs)

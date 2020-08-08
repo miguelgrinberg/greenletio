@@ -18,7 +18,7 @@ async def run():
 def main():
     now = time.perf_counter()
     asyncio.run(run())
-    print(time.perf_counter() - now)
+    print('%f' % (time.perf_counter() - now))
 
 
 main()

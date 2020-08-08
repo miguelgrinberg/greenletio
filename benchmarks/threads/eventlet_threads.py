@@ -1,6 +1,6 @@
 import random
-from greenletio.green import threading
-from greenletio.green import time
+from eventlet.green import threading
+from eventlet.green import time
 
 
 def t():

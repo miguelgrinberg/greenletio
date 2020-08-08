@@ -19,7 +19,7 @@ def run():
 def main():
     now = time.perf_counter()
     run()
-    print(time.perf_counter() - now)
+    print('%f' % (time.perf_counter() - now))
 
 
 main()

@@ -1,7 +1,9 @@
-import random
-from greenletio.green import threading
-from greenletio.green import time
+from gevent import monkey
+monkey.patch_all()
 
+import random
+import threading
+import time
 
 def t():
     for i in range(1000):
