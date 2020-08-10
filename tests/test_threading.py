@@ -109,6 +109,7 @@ class TestThreading(unittest.TestCase):
             nonlocal var
             for i in range(10):
                 with sem:
+                    assert sem.acquire(timeout=0.01) is False
                     assert var is None
                     var = 'foo'
                     time.sleep(0)

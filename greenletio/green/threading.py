@@ -15,15 +15,20 @@ def get_ident():
     return id(greenlet.getcurrent())
 
 
-class _LockMixin:
+class Lock:
+    def __init__(self):
+        self._lock = asyncio.Lock()
+        self.locked = self._lock.locked
+        self.release = self._lock.release
+
     def acquire(self, blocking=True, timeout=None):
         if not blocking and self.locked():
             return False
         if timeout is None or timeout < 0:
-            return await_(super().acquire())
+            return await_(self._lock.acquire())
         else:
             try:
-                return await_(asyncio.wait_for(super().acquire(), timeout))
+                return await_(asyncio.wait_for(self._lock.acquire(), timeout))
             except asyncio.TimeoutError:
                 return False
 
@@ -34,15 +39,12 @@ class _LockMixin:
         return self.release()
 
 
-class Lock(_LockMixin, asyncio.Lock):
-    pass
-
-
-class RLock(Lock):
+class RLock:
     def __init__(self):
-        super().__init__()
+        self._lock = Lock()
         self.owner = None
         self.count = 0
+        self.locked = self._lock.locked
 
     def __repr__(self):  # pragma: no cover
         owner = self.owner
@@ -63,7 +65,7 @@ class RLock(Lock):
         if self.owner == me:
             self.count += 1
             return True
-        ret = super().acquire(blocking, timeout)
+        ret = self._lock.acquire(blocking, timeout)
         if ret:
             self.owner = me
             self.count = 1
@@ -75,10 +77,16 @@ class RLock(Lock):
         self.count = self.count - 1
         if not self.count:
             self.owner = None
-            super().release()
+            self._lock.release()
+
+    def __enter__(self):
+        return self.acquire()
+
+    def __exit__(self, *args):
+        return self.release()
 
 
-class Condition(_LockMixin):
+class Condition:
     def __init__(self, lock=None):
         if lock is None:
             lock = RLock()
@@ -150,13 +158,38 @@ class Condition(_LockMixin):
 
     notifyAll = notify_all
 
+    def __enter__(self):
+        return self.acquire()
 
-class Semaphore(_LockMixin, asyncio.Semaphore):
-    pass
+    def __exit__(self, *args):
+        return self.release()
 
 
-class BoundedSemaphore(_LockMixin, asyncio.BoundedSemaphore):
-    pass
+class Semaphore:
+    def __init__(self, value=1):
+        self._sem = asyncio.Semaphore(value)
+        self.release = self._sem.release
+
+    def acquire(self, blocking=True, timeout=None):
+        if timeout is None:
+            return await_(self._sem.acquire())
+        else:
+            try:
+                return await_(asyncio.wait_for(self._sem.acquire(), timeout))
+            except asyncio.TimeoutError:
+                return False
+
+    def __enter__(self):
+        return self.acquire()
+
+    def __exit__(self, *args):
+        return self.release()
+
+
+class BoundedSemaphore(Semaphore):
+    def __init__(self, value=1):
+        self._sem = asyncio.BoundedSemaphore(value)
+        self.release = self._sem.release
 
 
 class Event(asyncio.Event):
