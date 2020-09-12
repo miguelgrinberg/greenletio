@@ -90,7 +90,14 @@ bridge = GreenletBridge()
 
 
 async def _run_greenlet_in_aio(gl, args=None, kwargs=None):
+    # run the function until one of two things happen:
+    # - await_() is called, which would switch back to us with the awaitable
+    # - another blocking condition is issued, such as wait for I/O or sleep,
+    #   which would return an empty tuple
     coro = gl.switch(*args, **kwargs)
+
+    # continue to run the greenlet for as long as it does not end and keeps
+    # returning awaitables
     while gl and coro != ():
         ret = None
         try:
