@@ -18,6 +18,7 @@ class GreenletBridge:
         self.loop = None
         self.bridge_greenlet = None
         self.scheduled = deque()
+        self.pending_io = object()
 
     def schedule(self, gl, *args, **kwargs):
         self.scheduled.append((gl, args, kwargs))
@@ -35,7 +36,8 @@ class GreenletBridge:
                 self.wait_event.clear()
                 while self.scheduled:
                     gl, args, kwargs = self.scheduled.popleft()
-                    gl.switch(*args, **kwargs)
+                    self.loop.create_task(_run_greenlet_in_aio(
+                        gl, args=args, kwargs=kwargs))
                 if self.stopping:  # pragma: no cover
                     break
                 await self.wait_event.wait()
@@ -87,10 +89,8 @@ class GreenletBridge:
 bridge = GreenletBridge()
 
 
-async def _run_greenlet_in_aio(gl, args=None, kwargs=None, coro=None):
-    gl._greenletio_running = True
-    if coro is None:
-        coro = gl.switch(*args, **kwargs)
+async def _run_greenlet_in_aio(gl, args=None, kwargs=None):
+    coro = gl.switch(*args, **kwargs)
     while gl and coro != ():
         ret = None
         try:
@@ -99,7 +99,6 @@ async def _run_greenlet_in_aio(gl, args=None, kwargs=None, coro=None):
             coro = gl.throw(*sys.exc_info())
         else:
             coro = gl.switch(ret)
-    del gl._greenletio_running
     return coro
 
 
@@ -108,7 +107,20 @@ def async_(fn):
     def decorator(*args, **kwargs):
         if not bridge.running and not bridge.starting:
             bridge.start()
-        return _run_greenlet_in_aio(greenlet(fn), args=args, kwargs=kwargs)
+
+        async def coro(fn, *args, **kwargs):
+            future = asyncio.Future()
+
+            def gl(future, fn, *args, **kwargs):
+                try:
+                    future.set_result(fn(*args, **kwargs))
+                except:  # noqa: E722
+                    future.set_exception(sys.exc_info()[1])
+
+            bridge.schedule(greenlet(gl), future, fn, *args, **kwargs)
+            return await future
+
+        return coro(fn, *args, **kwargs)
 
     return decorator
 
@@ -119,12 +131,7 @@ def await_(coro_or_fn):
         if not bridge.running and not bridge.starting:
             bridge.start()
 
-        gl = getcurrent()
-        if not hasattr(gl, '_greenletio_running'):
-            bridge.loop.create_task(_run_greenlet_in_aio(gl, coro=coro_or_fn))
-            return bridge.switch()
-        else:
-            return bridge.bridge_greenlet.switch(coro_or_fn)
+        return bridge.bridge_greenlet.switch(coro_or_fn)
     else:
         # assume decorator usage
         @functools.wraps(coro_or_fn)
