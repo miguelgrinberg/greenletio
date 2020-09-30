@@ -6,6 +6,12 @@ import sys
 from greenlet import greenlet, getcurrent
 
 
+try:
+    import contextvars
+except ImportError:
+    contextvars = None
+
+
 class GreenletBridge:
     def __init__(self):
         self.reset()
@@ -117,12 +123,19 @@ def async_(fn):
 
         async def coro(fn, *args, **kwargs):
             future = asyncio.Future()
-
-            def gl(future, fn, *args, **kwargs):
-                try:
-                    future.set_result(fn(*args, **kwargs))
-                except:  # noqa: E722
-                    future.set_exception(sys.exc_info()[1])
+            if contextvars is not None:
+                ctx = contextvars.copy_context()
+                def gl(future, fn, *args, **kwargs):
+                    try:
+                        future.set_result(ctx.run(fn, *args, **kwargs))
+                    except:  # noqa: E722
+                        future.set_exception(sys.exc_info()[1])
+            else:
+                def gl(future, fn, *args, **kwargs):
+                    try:
+                        future.set_result(fn(*args, **kwargs))
+                    except:  # noqa: E722
+                        future.set_exception(sys.exc_info()[1])
 
             bridge.schedule(greenlet(gl), future, fn, *args, **kwargs)
             return await future

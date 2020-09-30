@@ -1,6 +1,7 @@
 import asyncio
 import unittest
 import pytest
+import sys
 from greenletio import async_, await_, spawn
 from greenletio.core import bridge
 
@@ -163,3 +164,29 @@ class TestCore(unittest.TestCase):
 
         asyncio.get_event_loop().run_until_complete(c())
         assert var == 42
+
+    @pytest.mark.skipif(sys.version_info < (3, 7), reason="contextvars module is available since 3.7")
+    def test_contextvars(self):
+        import contextvars
+        var = contextvars.ContextVar(__name__)
+
+        @async_
+        def foo():
+            assert var.get() == 1
+            var.set(3)
+            assert var.get() == 3
+
+        async def bar():
+            assert var.get() == 1
+            var.set(2)
+            assert var.get() == 2
+
+        async def test_it():
+            var.set(1)
+            await asyncio.create_task(bar())
+            assert var.get() == 1
+            await foo()
+            assert var.get() == 1
+            await bar()
+            assert var.get() == 2
+        asyncio.get_event_loop().run_until_complete(test_it())
