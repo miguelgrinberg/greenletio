@@ -173,6 +173,7 @@ class TestCore(unittest.TestCase):
         @async_
         def foo():
             assert var.get() == 1
+            await_(bar())
             var.set(3)
             assert var.get() == 3
 

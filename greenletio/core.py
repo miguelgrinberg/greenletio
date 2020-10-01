@@ -151,7 +151,7 @@ def await_(coro_or_fn):
         if not bridge.running and not bridge.starting:
             bridge.start()
 
-        return bridge.bridge_greenlet.switch(coro_or_fn)
+        return bridge.bridge_greenlet.switch(asyncio.create_task(coro_or_fn))
     else:
         # assume decorator usage
         @functools.wraps(coro_or_fn)
