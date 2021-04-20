@@ -1,4 +1,4 @@
-asyncpg==0.20.1
+asyncpg==0.21.0
 dnspython==2.0.0
 eventlet==0.25.2
 gevent==20.6.2
