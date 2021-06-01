@@ -1,5 +1,5 @@
 Purpose
-=======
+-------
 
 Porting an application written in standard Python to asyncio is in general
 very complicated, as it requires a large portion of the codebase to be

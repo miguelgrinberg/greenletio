@@ -1,5 +1,5 @@
 How Is It Possible?
-===================
+-------------------
 
 ``greenletio`` combines asynchronous functions with greenlets to achieve what
 is not possible using standalone Python.
@@ -16,7 +16,7 @@ then be resumed via another greenlet jump once the blocking condition is
 resolved.
 
 Previous work
--------------
+~~~~~~~~~~~~~
 
 The idea for ``greenletio`` originated in a proof-of-concept gist by Mike
 Bayer that used greenlets to prevent synchronous code from blocking. The
