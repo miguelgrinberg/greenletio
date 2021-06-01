@@ -3,8 +3,19 @@ import os
 from greenletio.io import wait_to_read, wait_to_write
 from greenletio.patcher import copy_globals
 from socket import _GLOBAL_DEFAULT_TIMEOUT, SOCK_STREAM, AF_INET, AF_INET6, \
-    IPPROTO_IPV6, IPV6_V6ONLY, SOL_SOCKET, SO_REUSEADDR, SO_REUSEPORT, \
-    error, getaddrinfo, _socket, has_ipv6
+    IPV6_V6ONLY, SOL_SOCKET, error, getaddrinfo, _socket, has_ipv6
+try:
+    from socket import IPPROTO_IPV6
+except ImportError:  # pragma: no cover
+    pass
+try:
+    from socket import SO_REUSEADDR
+except ImportError:  # pragma: no cover
+    pass
+try:
+    from socket import SO_REUSEPORT
+except ImportError:  # pragma: no cover
+    pass
 try:
     from socket import has_dualstack_ipv6
 except ImportError:  # pragma: no cover

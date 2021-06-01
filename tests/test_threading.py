@@ -25,9 +25,9 @@ class TestThreading(unittest.TestCase):
 
         def t2():
             nonlocal var
-            time.sleep(0.02)
+            time.sleep(0.001)
             assert lock.acquire(blocking=False) is False
-            assert lock.acquire(timeout=0.01) is False
+            assert lock.acquire(timeout=0.001) is False
             with lock:
                 assert var == 'foo'
                 var = 'bar'
