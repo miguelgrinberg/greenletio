@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import unittest
 from greenletio import spawn
 from greenletio.core import bridge
@@ -60,5 +61,8 @@ class TestSSL(unittest.TestCase):
             while var is None:
                 await asyncio.sleep(0)
 
+        if sys.platform == 'win32':
+            loop = asyncio.SelectorEventLoop()
+            asyncio.set_event_loop(loop)
         asyncio.get_event_loop().run_until_complete(main())
         assert var == b'HELLO'

@@ -53,6 +53,12 @@ class socket(_original_socket_.socket):
                     wait_to_write(self.fileno())
                     if err == errno.EINPROGRESS:  # pragma: no cover
                         break
+                elif err == errno.EISCONN:  # pragma: no cover
+                    # the errors on Windows are slightly different and
+                    # sometimes a socket is connected but still returns
+                    # EWOULDBLOCK, so here we silence the error from a
+                    # second connect call
+                    break
                 else:  # pragma: no cover
                     raise
         return ret
