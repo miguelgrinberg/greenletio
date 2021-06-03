@@ -1,6 +1,6 @@
 # greenletio
 
-[![Build status](https://github.com/miguelgrinberg/greenletio/workflows/build/badge.svg)](https://github.com/miguelgrinberg/Flask-SocketIO/actions) [![codecov](https://codecov.io/gh/miguelgrinberg/greenletio/branch/main/graph/badge.svg)](https://codecov.io/gh/miguelgrinberg/greenletio)
+[![Build status](https://github.com/miguelgrinberg/greenletio/workflows/build/badge.svg)](https://github.com/miguelgrinberg/greenletio/actions) [![codecov](https://codecov.io/gh/miguelgrinberg/greenletio/branch/main/graph/badge.svg)](https://codecov.io/gh/miguelgrinberg/greenletio)
 
 This project allows synchronous and asynchronous functions to be used together.
 Unlike other methods based on executors and thread or process pools,
