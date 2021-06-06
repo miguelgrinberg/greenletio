@@ -56,4 +56,5 @@ def sync_function():
 
 - [Documentation](http://greenletio.readthedocs.io/en/latest/)
 - [PyPI](https://pypi.python.org/pypi/greenletio)
+- [Change Log](https://github.com/miguelgrinberg/greenletio/blob/main/CHANGES.md)
 
