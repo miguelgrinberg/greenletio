@@ -1,5 +1,13 @@
 # greenletio change log
 
+**Release 0.1.0** - 2021-06-08
+
+- Fixes for Windows ([commit](https://github.com/miguelgrinberg/greenletio/commit/aad9e42f597d9a0c4c05d0267bafeef10c84601a))
+- Fix timing errors in unit test ([commit](https://github.com/miguelgrinberg/greenletio/commit/70f669541f5139136723ff98b2d77d8fd9d60648))
+- Improved project structure ([commit](https://github.com/miguelgrinberg/greenletio/commit/85877cb37137e83af5ff0bfa8e57f094477766de))
+- Documentation ([commit](https://github.com/miguelgrinberg/greenletio/commit/9818c6036689811badfc5d6149f5398306b20565))
+- Switch to github actions for builds ([commit](https://github.com/miguelgrinberg/greenletio/commit/d94af9856c7ae1d8fa539e01337e61c8fa690434))
+
 **Release 0.0.7** - 2020-09-12
 
 - Handle pending I/O better in `async_` function ([commit](https://github.com/miguelgrinberg/greenletio/commit/2c1ab23a3a969db6258d52ca52258ad5e4ef45b6))
