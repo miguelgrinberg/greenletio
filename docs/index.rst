@@ -17,7 +17,7 @@ counterparts, without the need to create expensive threads or processes.
    purpose
    quickstart
    internals
+   api
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

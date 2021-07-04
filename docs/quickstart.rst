@@ -11,7 +11,8 @@ This package is installed with ``pip``::
 ``async_``
 ~~~~~~~~~~
 
-The ``async_`` function makes a synchronous function awaitable::
+The :func:`greenletio.async_` function makes a synchronous function
+awaitable::
 
  import asyncio
  from greenletio import async_
@@ -41,8 +42,8 @@ This function can also be used as a decorator::
 ``await_``
 ~~~~~~~~~~
 
-The ``await_`` function can be used to await an asynchronous function in a
-synchronous one, without blocking the asyncio loop::
+The :func:`greenletio.await_` function can be used to await an asynchronous
+function in a synchronous one, without blocking the asyncio loop::
 
  from greenletio import await_
 
@@ -72,9 +73,22 @@ blocking code.
 ``spawn``
 ~~~~~~~~~
 
-The ``spawn`` function launches a synchronous Python function asynchronously
-as a greenlet. The new greenlet (and any function called from it) can use the
-``await_`` function.
+The :func:`greenletio.spawn` function launches a synchronous Python function
+asynchronously as a greenlet. The new greenlet (and any function called from
+it) can use the :func:`greenletio.await_` function.
+
+``patch_blocking``
+~~~~~~~~~~~~~~~~~~
+
+The :func:`greenletio.patch_blocking` context manager can be used to import
+code written for the Python standard library with all the blocking functions
+redirected to their ``green.*`` replacements.
+
+``patch_psycopg2``
+~~~~~~~~~~~~~~~~~~
+
+The :func:`greenletio.patch_psycopg2` function configures psycopg2 to access
+Postgres databases in non-blocking mode.
 
 ``green.*``
 ~~~~~~~~~~~
@@ -89,16 +103,3 @@ asynchronously.
 
 Currently implemented modules are ``socket``, ``ssl``, ``threading``, and
 ``time``.
-
-``patch_blocking``
-~~~~~~~~~~~~~~~~~~
-
-The ``patch_blocking`` context manager can be used to import code written for
-the Python standard library with all the blocking functions redirected to
-their ``green.*`` replacements.
-
-``patch_psycopg2``
-~~~~~~~~~~~~~~~~~~
-
-The ``patch_psycopg2`` function configures psycopg2 to access  Postgres
-databases in non-blocking mode.

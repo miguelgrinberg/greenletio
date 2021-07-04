@@ -110,6 +110,28 @@ async def _run_greenlet_in_aio(gl, args=None, kwargs=None):
 
 
 def async_(fn):
+    """Convert a standard function to an async function that can be awaited.
+
+    This function creates an async wrapper for a standard function, allowing
+    callers to invoke the function as an awaitable. Example::
+
+        def fn():
+            pass
+
+        async def main():
+            await async_(fn)
+
+    It is also possible to use this function as a decorator::
+
+        @async_
+        def fn():
+            pass
+
+        async def main():
+            await fn()
+
+    :param fn: the standard function to convert to async.
+    """
     @functools.wraps(fn)
     def decorator(*args, **kwargs):
         if not bridge.running and not bridge.starting:
@@ -133,6 +155,29 @@ def async_(fn):
 
 
 def await_(coro_or_fn):
+    """Wait for an async function to complete in a standard function, without
+    blocking the asyncio loop.
+
+    This function can be used in two ways. First, as a replacement to the
+    ``await`` keyword in a standard function::
+
+        def func():
+            await_(asyncio.sleep(1))
+
+    Second, as a decorator to an async function, so that the function
+    can be called as a standard function while still not blocking the asyncio
+    loop::
+
+        @await_
+        async def func():
+            await asyncio.sleep(1)
+
+        def main():
+            func()
+
+    :param coro_or_fn: The coroutine or future to await, or when used as a
+                       decorator, the async function to decorate.
+    """
     if asyncio.iscoroutine(coro_or_fn) or asyncio.isfuture(coro_or_fn):
         # we were given an awaitable --> await it
         if not bridge.running and not bridge.starting:
@@ -149,6 +194,16 @@ def await_(coro_or_fn):
 
 
 def spawn(fn, *args, **kwargs):
+    """Run a standard function asynchronously in a greenlet.
+
+    This function is mostly used internally, so in general it is not needed by
+    applications. The main purpose is to be able to use the
+    :func:`greenletio.await_` function.
+
+    :param fn: the function to run.
+    :param args: positional function arguments.
+    :param kwargs: keyboard function arguments.
+    """
     if not bridge.running and not bridge.starting:
         bridge.start()
 

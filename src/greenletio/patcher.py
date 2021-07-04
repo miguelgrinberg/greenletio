@@ -12,6 +12,19 @@ def copy_globals(source_module, globals_dict):
 
 @contextmanager
 def patch_blocking(modules=None):
+    """Context manager that replaces blocking modules from the Python standard
+    library with non-blocking replacements.
+
+    The following example shows how to import the ``requests`` package so that
+    it becomes non-blocking::
+
+        with patch_blocking():
+            import requests
+
+    :param modules: the list of modules to patch, or `None` to patch all the
+                    supported modules, which at this time are ``socket``,
+                    ``ssl``, ``threading`` and ``time``.
+    """
     saved = {}
     saved_module_list = list(sys.modules.keys()).copy()
     if modules is None:
@@ -35,6 +48,7 @@ def patch_blocking(modules=None):
 
 
 def patch_psycopg2():
+    """Patch the ``psycopg2`` package so that it becomes non-blocking."""
     import psycopg2
     from psycopg2.extensions import POLL_OK, POLL_READ, POLL_WRITE
     from greenletio.io import wait_to_read, wait_to_write
