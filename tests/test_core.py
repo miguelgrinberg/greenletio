@@ -163,3 +163,18 @@ class TestCore(unittest.TestCase):
 
         asyncio.get_event_loop().run_until_complete(c())
         assert var == 42
+
+    def test_bad_await(self):
+        @async_
+        def a():
+            await_(asyncio.sleep(0))
+
+        def b():
+            with pytest.raises(RuntimeError):
+                await_(asyncio.sleep(0))
+
+        async def c():
+            await a()
+            b()
+
+        asyncio.get_event_loop().run_until_complete(c())

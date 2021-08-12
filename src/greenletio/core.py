@@ -182,6 +182,8 @@ def await_(coro_or_fn):
         # we were given an awaitable --> await it
         if not bridge.running and not bridge.starting:
             bridge.start()
+        if bridge.bridge_greenlet == getcurrent():
+            raise RuntimeError('Cannot use await_ in asyncio thread')
 
         return bridge.bridge_greenlet.switch(coro_or_fn)
     else:
