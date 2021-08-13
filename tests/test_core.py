@@ -1,13 +1,13 @@
 import asyncio
 import unittest
 import pytest
-from greenletio import async_, await_, spawn
+from greenletio import async_, await_
 from greenletio.core import bridge
 
 
 class TestCore(unittest.TestCase):
     def setUp(self):
-        bridge.reset()
+        pass
 
     def tearDown(self):
         bridge.stop()
@@ -25,8 +25,8 @@ class TestCore(unittest.TestCase):
         assert var == 42
 
         bridge.stop()
-        assert not bridge.running
-        assert not asyncio.get_event_loop().is_running()
+        with pytest.raises(RuntimeError):
+            asyncio.get_running_loop()
 
     def test_await_decorator_with_internal_loop(self):
         var = None
@@ -42,8 +42,8 @@ class TestCore(unittest.TestCase):
         assert var == 42
 
         bridge.stop()
-        assert not bridge.running
-        assert not asyncio.get_event_loop().is_running()
+        with pytest.raises(RuntimeError):
+            asyncio.get_running_loop()
 
     def test_async_await_with_external_loop(self):
         var = None
@@ -128,7 +128,6 @@ class TestCore(unittest.TestCase):
 
         with pytest.raises(RuntimeError) as exc:
             await_(a(42))
-        assert exc.type == RuntimeError
         assert str(exc.value) == 'foo'
 
     def test_async_raises_exception(self):
@@ -139,32 +138,28 @@ class TestCore(unittest.TestCase):
         async def b():
             with pytest.raises(RuntimeError) as exc:
                 await a(42)
-            assert exc.type == RuntimeError
             assert str(exc.value) == 'foo'
 
         asyncio.get_event_loop().run_until_complete(b())
 
-    def test_spawn(self):
-        var = 0
+    def test_await_after_exception(self):
+        async def a():
+            raise RuntimeError('foo')
 
-        def a(arg):
-            nonlocal var
-            var += arg
+        async def b():
+            return 42
 
-        def b(arg):
-            nonlocal var
-            var += arg
-
-        async def c():
-            ga = spawn(a, 40)
-            gb = spawn(b, 2)
-            while not ga.dead or not gb.dead:
-                await asyncio.sleep(0)
+        @async_
+        def c():
+            try:
+                await_(a())
+            except RuntimeError as exc:
+                assert str(exc) == 'foo'
+            assert await_(b()) == 42
 
         asyncio.get_event_loop().run_until_complete(c())
-        assert var == 42
 
-    def test_bad_await(self):
+    def test_bad_await_with_external_loop(self):
         @async_
         def a():
             await_(asyncio.sleep(0))
@@ -172,9 +167,23 @@ class TestCore(unittest.TestCase):
         def b():
             with pytest.raises(RuntimeError):
                 await_(asyncio.sleep(0))
+            assert bridge.bridge_greenlet is None
 
         async def c():
             await a()
             b()
 
         asyncio.get_event_loop().run_until_complete(c())
+        assert bridge.bridge_greenlet is None
+
+    def bad_await_with_internal_loop(self):
+        async def a():
+            with pytest.raises(RuntimeError):
+                await_(asyncio.sleep(0))
+
+        await_(a())
+
+    def test_switch_bridge_twice(self):
+        bridge.start()
+        with pytest.raises(RuntimeError):
+            bridge.switch()

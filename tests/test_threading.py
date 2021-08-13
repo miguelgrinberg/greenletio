@@ -6,7 +6,7 @@ from greenletio.green import threading, time
 
 class TestThreading(unittest.TestCase):
     def setUp(self):
-        bridge.reset()
+        pass
 
     def tearDown(self):
         bridge.stop()

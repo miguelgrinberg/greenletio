@@ -24,9 +24,12 @@ intent was to use this technique to allow SQLAlchemy to work in asynchronous
 applications. This technique currently allows SQLAlchemy to work with
 asynchronous database drivers.
 
-Since Mike's code became public we learned of another project combining
+Since Mike's code became public I learned of another project combining
 coroutines and greenlets with the same goal called
-`greenback <https://github.com/oremanj/greenback>`_, by Joshua Oreman.
+`greenback <https://github.com/oremanj/greenback>`_, by Joshua Oreman. A
+`gist <https://gist.github.com/snaury/202bf4f22c41ca34e56297bae5f33fef>`_ by
+Alexey Borzenkov also shows asyncio tasks and greenlets running in
+concurrently.
 
 The overall design of ``greenletio`` is based on
 `eventlet <https://eventlet.net>`_.
