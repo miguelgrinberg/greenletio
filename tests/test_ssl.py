@@ -1,8 +1,7 @@
 import asyncio
 import sys
 import unittest
-from greenletio import spawn
-from greenletio.core import bridge
+from greenletio.core import bridge, async_
 from greenletio.green import socket, ssl
 
 # Tests in this module use server and client certificates
@@ -15,10 +14,13 @@ from greenletio.green import socket, ssl
 # openssl req -x509 -newkey rsa:4096 -keyout client.key -out client.crt
 # -days 365 -nodes -subj "/CN=example.com"
 
+if not hasattr(asyncio, 'create_task'):
+    asyncio.create_task = asyncio.ensure_future
+
 
 class TestSSL(unittest.TestCase):
     def setUp(self):
-        bridge.reset()
+        pass
 
     def tearDown(self):
         bridge.stop()
@@ -26,6 +28,7 @@ class TestSSL(unittest.TestCase):
     def test_sendall_recv(self):
         var = None
 
+        @async_
         def server():
             server_socket = socket.socket()
             server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -41,6 +44,7 @@ class TestSSL(unittest.TestCase):
             conn.close()
             ssl_socket.close()
 
+        @async_
         def client():
             nonlocal var
             client_socket = socket.socket()
@@ -56,8 +60,8 @@ class TestSSL(unittest.TestCase):
 
         async def main():
             nonlocal var
-            spawn(server)
-            spawn(client)
+            asyncio.create_task(server())
+            asyncio.create_task(client())
             while var is None:
                 await asyncio.sleep(0)
 

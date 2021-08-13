@@ -1,26 +1,30 @@
-from greenlet import getcurrent
-from greenletio.core import bridge
+import asyncio
+from greenletio.core import await_
 
 
-def _reader_callback(fd, gl):
-    bridge.loop.remove_reader(fd)
-    bridge.schedule(gl)
+def _reader_callback(fd, ev):
+    asyncio.get_event_loop().remove_reader(fd)
+    ev.set()
 
 
-def _writer_callback(fd, gl):
-    bridge.loop.remove_writer(fd)
-    bridge.schedule(gl)
+def _writer_callback(fd, ev):
+    asyncio.get_event_loop().remove_writer(fd)
+    ev.set()
 
 
 def wait_to_read(fd):
-    if not bridge.running and not bridge.starting:  # pragma: no cover
-        bridge.start()
-    bridge.loop.add_reader(fd, _reader_callback, fd, getcurrent())
-    bridge.switch()
+    async def wait():
+        event = asyncio.Event()
+        asyncio.get_event_loop().add_reader(fd, _reader_callback, fd, event)
+        await event.wait()
+
+    await_(wait())
 
 
 def wait_to_write(fd):
-    if not bridge.running and not bridge.starting:  # pragma: no cover
-        bridge.start()
-    bridge.loop.add_writer(fd, _writer_callback, fd, getcurrent())
-    bridge.switch()
+    async def wait():
+        event = asyncio.Event()
+        asyncio.get_event_loop().add_writer(fd, _writer_callback, fd, event)
+        await event.wait()
+
+    await_(wait())

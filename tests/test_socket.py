@@ -1,14 +1,16 @@
 import asyncio
 import sys
 import unittest
-from greenletio import spawn
-from greenletio.core import bridge
+from greenletio.core import bridge, async_
 from greenletio.green import socket
+
+if not hasattr(asyncio, 'create_task'):
+    asyncio.create_task = asyncio.ensure_future
 
 
 class TestSocket(unittest.TestCase):
     def setUp(self):
-        bridge.reset()
+        pass
 
     def tearDown(self):
         bridge.stop()
@@ -16,6 +18,7 @@ class TestSocket(unittest.TestCase):
     def test_sendall_recv(self):
         var = None
 
+        @async_
         def server():
             server_socket = socket.socket()
             server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -27,6 +30,7 @@ class TestSocket(unittest.TestCase):
             conn.close()
             server_socket.close()
 
+        @async_
         def client():
             nonlocal var
             client_socket = socket.socket()
@@ -37,8 +41,8 @@ class TestSocket(unittest.TestCase):
 
         async def main():
             nonlocal var
-            spawn(server)
-            spawn(client)
+            asyncio.create_task(server())
+            asyncio.create_task(client())
             while var is None:
                 await asyncio.sleep(0)
 
@@ -51,6 +55,7 @@ class TestSocket(unittest.TestCase):
     def test_sendto_recvfrom(self):
         var = None
 
+        @async_
         def server():
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -59,6 +64,7 @@ class TestSocket(unittest.TestCase):
             server_socket.sendto(data.upper(), addr)
             server_socket.close()
 
+        @async_
         def client():
             nonlocal var
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -68,8 +74,8 @@ class TestSocket(unittest.TestCase):
 
         async def main():
             nonlocal var
-            spawn(server)
-            spawn(client)
+            asyncio.create_task(server())
+            asyncio.create_task(client())
             while var is None:
                 await asyncio.sleep(0)
 
