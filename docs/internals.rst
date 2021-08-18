@@ -28,8 +28,8 @@ Since Mike's code became public I learned of another project combining
 coroutines and greenlets with the same goal called
 `greenback <https://github.com/oremanj/greenback>`_, by Joshua Oreman. A
 `gist <https://gist.github.com/snaury/202bf4f22c41ca34e56297bae5f33fef>`_ by
-Alexey Borzenkov also shows asyncio tasks and greenlets running in
+Alexey Borzenkov also shows asyncio tasks and greenlets running
 concurrently.
 
-The overall design of ``greenletio`` is based on
-`eventlet <https://eventlet.net>`_.
+Many design ideas used by ``greenletio`` are based on the
+`eventlet <https://eventlet.net>`_ framework.
