@@ -1,5 +1,12 @@
 # greenletio change log
 
+**Release 0.9.0** - 2021-08-18
+
+- Simplified the `async_` and `await_` functions ([commit](https://github.com/miguelgrinberg/greenletio/commit/0469db503fdc6fe16685830d9ba25d849e8967af))
+- Raise a `RuntimeError` when `await_` is used in the asyncio thread ([commit](https://github.com/miguelgrinberg/greenletio/commit/e7c675fbf35d0709d0e9093f1e820f3781394921))
+- API reference documentation section ([commit](https://github.com/miguelgrinberg/greenletio/commit/8cd00033da0b52a858d3fe4cf3d5ece3463b6c52))
+- Documentation updates ([commit](https://github.com/miguelgrinberg/greenletio/commit/e547fccb018b272f32d308bd4b865cf93d4f09d4))
+
 **Release 0.1.0** - 2021-06-08
 
 - Fixes for Windows ([commit](https://github.com/miguelgrinberg/greenletio/commit/aad9e42f597d9a0c4c05d0267bafeef10c84601a))
