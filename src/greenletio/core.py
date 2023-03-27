@@ -1,7 +1,19 @@
 import asyncio
+import contextvars
 import functools
 import sys
 from greenlet import greenlet, getcurrent
+
+
+def _restore_context(context):
+    # Check for changes in contextvars, and set them to the current
+    # context for downstream consumers
+    for cvar in context:
+        try:
+            if cvar.get() != context.get(cvar):
+                cvar.set(context.get(cvar))
+        except LookupError:
+            cvar.set(context.get(cvar))
 
 
 class GreenletBridge:
@@ -55,7 +67,7 @@ class GreenletBridge:
 bridge = GreenletBridge()
 
 
-def async_(fn):
+def async_(fn=None, copy_context=False, copyback_context=False):
     """Convert a standard function to an async function that can be awaited.
 
     This function creates an async wrapper for a standard function, allowing
@@ -77,24 +89,34 @@ def async_(fn):
             await fn()
 
     :param fn: the standard function to convert to async.
+    :param copy_context: pass current contextvars.Context to greenlet (make available in fn)
+    :param copyback_context: reflect changes made in greenlet in current context
+        Using this option together with `copy_context` make this call similar to awaiting normal async function
     """
+
+    if fn is None:
+        return functools.partial(async_, copy_context=copy_context, copyback_context=copyback_context)
+
     @functools.wraps(fn)
-    def decorator(*args, **kwargs):
-        async def wrapper(fn, *args, **kwargs):
-            gl = greenlet(fn)
-            coro = gl.switch(*args, **kwargs)
-            while gl:
-                try:
-                    result = await coro
-                except:  # noqa: E722
-                    coro = gl.throw(*sys.exc_info())
-                else:
-                    coro = gl.switch(result)
+    async def wrapper(*args, **kwargs):
+        gl = greenlet(fn)
+        if copy_context:
+            gl.gr_context = contextvars.copy_context()
+        coro = gl.switch(*args, **kwargs)
+        while gl:
+            try:
+                result = await coro
+            except:  # noqa: E722
+                coro = gl.throw(*sys.exc_info())
+            else:
+                coro = gl.switch(result)
 
-            return coro
-        return wrapper(fn, *args, **kwargs)
+        if copyback_context:
+            _restore_context(gl.gr_context)
 
-    return decorator
+        return coro
+
+    return wrapper
 
 
 def await_(coro_or_fn):
