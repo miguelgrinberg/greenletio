@@ -1,5 +1,12 @@
 # greenletio change log
 
+**Release 0.10.0** - 2023-03-27
+
+- Optionally preserve contextvars in `async_` decorator [#10](https://github.com/miguelgrinberg/greenletio/issues/10) ([commit](https://github.com/miguelgrinberg/greenletio/commit/620cb485e8485408cf97c7e7cbc8adcb58e34796))
+- Functions wrapped with `async_` are now proper coroutines ([commit](https://github.com/miguelgrinberg/greenletio/commit/be7a59a74986ec098302f4762adbe4dbfd2396fc))
+- Add python 3.10, 3.11 and pypy 3.8 to builds, remove Python 3.6 ([commit](https://github.com/miguelgrinberg/greenletio/commit/5fad25fb342805340aef9264e0228c914310d244))
+- Add a context switching benchmark ([commit](https://github.com/miguelgrinberg/greenletio/commit/66d57e5c89cc6e01951ae8b4c7de6a1e3dde6657))
+
 **Release 0.9.0** - 2021-08-18
 
 - Simplified the `async_` and `await_` functions ([commit](https://github.com/miguelgrinberg/greenletio/commit/0469db503fdc6fe16685830d9ba25d849e8967af))
