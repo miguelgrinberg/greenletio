@@ -222,7 +222,7 @@ class Thread(_original_threading_.Thread):
         if kwargs is None:
             kwargs = {}
         self._target = target
-        self._name = str(name or _original_threading_._newname())
+        self._name = str(name or _original_threading_._newname('GThread-%d'))
         self._args = args
         self._kwargs = kwargs
         self._daemonic = False
