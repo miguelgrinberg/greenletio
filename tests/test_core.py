@@ -1,4 +1,5 @@
 import asyncio
+import contextvars
 import unittest
 import pytest
 from greenletio import async_, await_
@@ -59,7 +60,7 @@ class TestCore(unittest.TestCase):
         def b(arg):
             return await_(a(arg))
 
-        @async_
+        @async_()
         def c(arg):
             return arg
 
@@ -72,6 +73,27 @@ class TestCore(unittest.TestCase):
         ret = asyncio.get_event_loop().run_until_complete(d(42))
         assert ret == 42
         assert var == 42
+
+    def test_async_await_with_context(self):
+        var = contextvars.ContextVar('var', default=1)
+
+        @async_(with_context=True)
+        def a():
+            oldvar = var.get()
+            var.set(var.get() + 1)
+            return oldvar
+
+        async def b():
+            assert var.get() == 1
+            assert await a() == 1
+            assert var.get() == 2
+            assert await a() == 2
+            assert var.get() == 3
+            var.set(42)
+            assert await a() == 42
+            assert var.get() == 43
+
+        asyncio.get_event_loop().run_until_complete(b())
 
     def test_async_await_exception(self):
         @async_
@@ -101,6 +123,23 @@ class TestCore(unittest.TestCase):
             await b(arg)
 
         asyncio.get_event_loop().run_until_complete(c(42))
+
+    def test_async_await_exception3(self):
+        var = contextvars.ContextVar('var', default=1)
+
+        @async_(with_context=True)
+        def a():
+            var.set(var.get() + 1)
+            raise RuntimeError('foo')
+
+        async def b():
+            try:
+                await a()
+            except RuntimeError:
+                pass
+            assert var.get() == 2
+
+        asyncio.get_event_loop().run_until_complete(b())
 
     def test_gather_with_external_loop(self):
         var = 0

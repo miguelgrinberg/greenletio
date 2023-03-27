@@ -1,4 +1,5 @@
 import asyncio
+import contextvars
 import functools
 import sys
 from greenlet import greenlet, getcurrent
@@ -55,7 +56,7 @@ class GreenletBridge:
 bridge = GreenletBridge()
 
 
-def async_(fn):
+def async_(fn=None, *, with_context=False):
     """Convert a standard function to an async function that can be awaited.
 
     This function creates an async wrapper for a standard function, allowing
@@ -76,21 +77,47 @@ def async_(fn):
         async def main():
             await fn()
 
+    If you are using context variables, you can use the ``with_context`` option
+    to ensure that the context is preserved when the function is called::
+
+        @async_(with_context=True)
+        def fn():
+            pass
+
     :param fn: the standard function to convert to async.
     """
+    if fn is None:
+        return lambda fn: async_(fn, with_context=with_context)
+
     @functools.wraps(fn)
     async def decorator(*args, **kwargs):
         gl = greenlet(fn)
-        coro = gl.switch(*args, **kwargs)
-        while gl:
-            try:
-                result = await coro
-            except:  # noqa: E722
-                coro = gl.throw(*sys.exc_info())
-            else:
-                coro = gl.switch(result)
 
-        return coro
+        async def run():
+            coro = gl.switch(*args, **kwargs)
+            while gl:
+                try:
+                    result = await coro
+                except:  # noqa: E722
+                    # this catches exceptions from async functions awaited in
+                    # sync code, and re-raises them in the greenlet
+                    coro = gl.throw(*sys.exc_info())
+                else:
+                    coro = gl.switch(result)
+            return coro
+
+        if with_context:
+            gl.gr_context = contextvars.copy_context()
+            try:
+                result = await run()
+            finally:
+                # restore the context
+                for var in gl.gr_context:
+                    var.set(gl.gr_context[var])
+        else:
+            result = await run()
+
+        return result
 
     return decorator
 
