@@ -79,20 +79,18 @@ def async_(fn):
     :param fn: the standard function to convert to async.
     """
     @functools.wraps(fn)
-    def decorator(*args, **kwargs):
-        async def wrapper(fn, *args, **kwargs):
-            gl = greenlet(fn)
-            coro = gl.switch(*args, **kwargs)
-            while gl:
-                try:
-                    result = await coro
-                except:  # noqa: E722
-                    coro = gl.throw(*sys.exc_info())
-                else:
-                    coro = gl.switch(result)
+    async def decorator(*args, **kwargs):
+        gl = greenlet(fn)
+        coro = gl.switch(*args, **kwargs)
+        while gl:
+            try:
+                result = await coro
+            except:  # noqa: E722
+                coro = gl.throw(*sys.exc_info())
+            else:
+                coro = gl.switch(result)
 
-            return coro
-        return wrapper(fn, *args, **kwargs)
+        return coro
 
     return decorator
 

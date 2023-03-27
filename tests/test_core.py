@@ -67,6 +67,8 @@ class TestCore(unittest.TestCase):
             assert await(c(arg)) == arg
             return await b(arg)
 
+        assert asyncio.iscoroutinefunction(b)
+        assert asyncio.iscoroutinefunction(c)
         ret = asyncio.get_event_loop().run_until_complete(d(42))
         assert ret == 42
         assert var == 42
