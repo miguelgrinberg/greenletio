@@ -1,5 +1,9 @@
 # greenletio change log
 
+**Release 0.10.1** - 2023-04-21
+
+- Minor refactoring for added clarity ([commit](https://github.com/miguelgrinberg/greenletio/commit/8b7413866dfcb682e304814aa605ff5c7399ec64))
+
 **Release 0.10.0** - 2023-03-27
 
 - Optionally preserve contextvars in `async_` decorator [#10](https://github.com/miguelgrinberg/greenletio/issues/10) ([commit](https://github.com/miguelgrinberg/greenletio/commit/620cb485e8485408cf97c7e7cbc8adcb58e34796))
