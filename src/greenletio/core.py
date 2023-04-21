@@ -6,6 +6,8 @@ from greenlet import greenlet, getcurrent
 
 
 class GreenletBridge:
+    stop = object()
+
     def __init__(self):
         self.bridge_greenlet = None
 
@@ -13,7 +15,7 @@ class GreenletBridge:
         async def async_run():
             gl = getcurrent().parent
             coro = gl.switch()
-            while gl and coro != ():  # pragma: no branch
+            while gl and coro != self.stop:  # pragma: no branch
                 try:
                     result = await coro
                 except:  # noqa: E722
@@ -35,22 +37,17 @@ class GreenletBridge:
         if self.bridge_greenlet:
             return self.bridge_greenlet
         if asyncio.get_event_loop().is_running():
-            # we shouldn't be here is a loop is already running!
+            # we shouldn't be here if a loop is already running!
             return greenlet.getcurrent()
 
-        self.switch()
+        self.bridge_greenlet = greenlet(self.run)
+        self.bridge_greenlet.switch()
         return self.bridge_greenlet
 
     def stop(self):
         if self.bridge_greenlet:
-            self.bridge_greenlet.switch()
+            self.bridge_greenlet.switch(self.stop)
             self.bridge_greenlet = None
-
-    def switch(self):
-        if self.bridge_greenlet is not None:
-            raise RuntimeError('Bridge already started.')
-        self.bridge_greenlet = greenlet(self.run)
-        return self.bridge_greenlet.switch()
 
 
 bridge = GreenletBridge()

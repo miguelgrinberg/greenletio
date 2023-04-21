@@ -2,7 +2,7 @@ import asyncio
 import collections
 import weakref
 import greenlet
-from greenletio.core import bridge, await_, async_
+from greenletio.core import await_, async_
 from greenletio.patcher import copy_globals
 import threading as _original_threading_
 
@@ -243,7 +243,6 @@ class Thread(_original_threading_.Thread):
         async def bootstrap():
             await async_(self._bootstrap)()
 
-        bridge.start()
         self.task = asyncio.ensure_future(bootstrap())
         self._started.set()
 

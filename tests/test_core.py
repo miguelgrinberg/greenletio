@@ -225,8 +225,3 @@ class TestCore(unittest.TestCase):
                 await_(asyncio.sleep(0))
 
         await_(a())
-
-    def test_switch_bridge_twice(self):
-        bridge.start()
-        with pytest.raises(RuntimeError):
-            bridge.switch()
