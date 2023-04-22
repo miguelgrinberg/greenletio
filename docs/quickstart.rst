@@ -122,6 +122,17 @@ redirected to a set of non-blocking replacements::
 
    asyncio.run(main())
 
+The modules that are currently patched are ``socket``, ``select``,
+``selectors``, ``ssl``, ``threading``, and ``time``. Applications that use
+blocking functions in other modules or in third-party packages will need to be
+manually adapt their code to not block the asyncio loop.
+
+Patching is achieved by replacing original modules from the standard library
+with drop-in replacements imported from ``greenletio.green``. These adapted
+versions of the original modules use the ``async_()`` and ``await_()``
+functions and a variety of other techniques to avoid blocking the asyncio
+loop.
+
 Patching the psycopg2 module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -129,16 +140,20 @@ The :func:`greenletio.patch_psycopg2` function configures the ``psycopg2``
 package to access Postgres databases in non-blocking mode. This function needs
 to be called once at the start of the application.
 
+Automatic patching of Blocking Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``greenletio`` command-line tool can be used instead of the ``python``
+command to run a standard (i.e. non-asyncio) script with blocking functions
+in the Python Standard Library patched to non-blocking versions::
+
+   greenletio myscript.py arg1 arg2
+
+The ``-m`` option can be used to run a module::
+
+   greenletio -m mymodule arg1 arg2
+
 Green Functions
 ~~~~~~~~~~~~~~~
 
-The modules under ``greenletio.green`` are drop-in replacements of the Python
-standard library modules of the same name, implemented using the ``async_``,
-and ``await_`` primitives.
 
-The goal is to provide replacements for commonly used blocking functions in
-the standard library, so that code written in blocking style can be used
-asynchronously.
-
-Currently implemented modules are ``socket``, ``select``, ``selectors``,
-``ssl``, ``threading``, and ``time``.
