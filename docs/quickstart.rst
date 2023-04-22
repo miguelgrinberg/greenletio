@@ -140,5 +140,5 @@ The goal is to provide replacements for commonly used blocking functions in
 the standard library, so that code written in blocking style can be used
 asynchronously.
 
-Currently implemented modules are ``socket``, ``ssl``, ``threading``, and
-``time``.
+Currently implemented modules are ``socket``, ``select``, ``selectors``,
+``ssl``, ``threading``, and ``time``.

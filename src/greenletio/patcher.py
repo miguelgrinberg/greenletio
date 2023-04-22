@@ -23,12 +23,13 @@ def patch_blocking(modules=None):
 
     :param modules: the list of modules to patch, or `None` to patch all the
                     supported modules, which at this time are ``socket``,
-                    ``ssl``, ``threading`` and ``time``.
+                    ``select``, ``selectors``, ``ssl``, ``threading`` and
+                    ``time``.
     """
     saved = {}
     saved_module_list = list(sys.modules.keys()).copy()
     if modules is None:
-        modules = ['socket', 'ssl', 'threading', 'time']
+        modules = ['socket', 'select', 'selectors', 'ssl', 'threading', 'time']
     for module in modules:
         if module not in patched:
             patched[module] = getattr(
