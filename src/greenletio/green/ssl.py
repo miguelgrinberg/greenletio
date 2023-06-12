@@ -2,7 +2,7 @@ import os
 import sys
 from greenletio.io import wait_to_read, wait_to_write
 from greenletio.patcher import copy_globals
-from ssl import SSLWantReadError, SSLWantWriteError, PROTOCOL_TLS, Purpose, \
+from ssl import SSLWantReadError, SSLWantWriteError, PROTOCOL_TLS_SERVER, PROTOCOL_TLS_CLIENT, Purpose, \
     CERT_NONE, CERT_REQUIRED, _ASN1Object
 import ssl as _original_ssl_
 
@@ -121,12 +121,10 @@ def create_default_context(purpose=Purpose.SERVER_AUTH, *, cafile=None,
     # SSLContext sets OP_NO_SSLv2, OP_NO_SSLv3, OP_NO_COMPRESSION,
     # OP_CIPHER_SERVER_PREFERENCE, OP_SINGLE_DH_USE and OP_SINGLE_ECDH_USE
     # by default.
-    context = SSLContext(PROTOCOL_TLS)
-
-    if purpose == Purpose.SERVER_AUTH:
-        # verify certs and host name in client mode
-        context.verify_mode = CERT_REQUIRED
-        context.check_hostname = True
+    if purpose ==Purpose.SERVER_AUTH:
+        context = SSLContext(PROTOCOL_TLS_CLIENT)
+    else:
+        context = SSLContext(PROTOCOL_TLS_SERVER)
 
     if cafile or capath or cadata:
         context.load_verify_locations(cafile, capath, cadata)

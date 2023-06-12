@@ -2,7 +2,7 @@ import asyncio
 import collections
 import weakref
 import greenlet
-from greenletio.core import await_, async_
+from greenletio.core import await_, async_, get_loop
 from greenletio.patcher import copy_globals
 import threading as _original_threading_
 
@@ -109,7 +109,7 @@ class Condition:
 
         self.release()
         try:
-            fut = asyncio.get_event_loop().create_future()
+            fut = get_loop().create_future()
             self._waiters.append(fut)
             try:
                 if timeout is None:
@@ -243,7 +243,7 @@ class Thread(_original_threading_.Thread):
         async def bootstrap():
             await async_(self._bootstrap)()
 
-        self.task = asyncio.ensure_future(bootstrap())
+        self.task = asyncio.ensure_future(bootstrap(), loop=get_loop())
         self._started.set()
 
     def _set_ident(self):

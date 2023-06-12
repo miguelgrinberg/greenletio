@@ -3,9 +3,7 @@ import sys
 import unittest
 from greenletio.core import bridge, async_
 from greenletio.green import socket, selectors, time
-
-if not hasattr(asyncio, 'create_task'):
-    asyncio.create_task = asyncio.ensure_future
+from .util import run_coro
 
 
 class TestSelect(unittest.TestCase):
@@ -70,8 +68,5 @@ class TestSelect(unittest.TestCase):
             while var is None:
                 await asyncio.sleep(0)
 
-        if sys.platform == 'win32':
-            loop = asyncio.SelectorEventLoop()
-            asyncio.set_event_loop(loop)
-        asyncio.get_event_loop().run_until_complete(main())
+        run_coro(main())
         assert var == b'HELLO'

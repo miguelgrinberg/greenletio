@@ -3,6 +3,20 @@ import contextvars
 import functools
 import sys
 from greenlet import greenlet, getcurrent
+import warnings
+
+
+def get_loop():
+    """Get an asyncio event loop for the current thread."""
+    # Avoid warnings in Python 3.10 and 3.11.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:  # pragma: no cover
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        return loop
 
 
 class GreenletBridge:
@@ -24,21 +38,18 @@ class GreenletBridge:
                     coro = gl.switch(result)
 
         # get the asyncio loop
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:  # pragma: no cover
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        loop.run_until_complete(async_run())
+        get_loop().run_until_complete(async_run())
         self.bridge_greenlet = None
 
     def start(self):
         if self.bridge_greenlet:
             return self.bridge_greenlet
-        if asyncio.get_event_loop().is_running():
+        try:
+            asyncio.get_running_loop()
             # we shouldn't be here if a loop is already running!
             return greenlet.getcurrent()
+        except RuntimeError:
+            pass
 
         self.bridge_greenlet = greenlet(self.run)
         self.bridge_greenlet.switch()

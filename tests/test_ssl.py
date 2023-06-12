@@ -14,9 +14,6 @@ from greenletio.green import socket, ssl
 # openssl req -x509 -newkey rsa:4096 -keyout client.key -out client.crt
 # -days 365 -nodes -subj "/CN=example.com"
 
-if not hasattr(asyncio, 'create_task'):
-    asyncio.create_task = asyncio.ensure_future
-
 
 class TestSSL(unittest.TestCase):
     def setUp(self):
@@ -67,6 +64,8 @@ class TestSSL(unittest.TestCase):
 
         if sys.platform == 'win32':
             loop = asyncio.SelectorEventLoop()
-            asyncio.set_event_loop(loop)
-        asyncio.get_event_loop().run_until_complete(main())
+        else:
+            loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(main())
         assert var == b'HELLO'
