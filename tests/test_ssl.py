@@ -3,6 +3,7 @@ import sys
 import unittest
 from greenletio.core import bridge, async_
 from greenletio.green import socket, ssl
+from .util import run_coro
 
 # Tests in this module use server and client certificates
 #
@@ -62,10 +63,5 @@ class TestSSL(unittest.TestCase):
             while var is None:
                 await asyncio.sleep(0)
 
-        if sys.platform == 'win32':
-            loop = asyncio.SelectorEventLoop()
-        else:
-            loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(main())
+        run_coro(main())
         assert var == b'HELLO'

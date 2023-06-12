@@ -2,8 +2,9 @@ import os
 import sys
 from greenletio.io import wait_to_read, wait_to_write
 from greenletio.patcher import copy_globals
-from ssl import SSLWantReadError, SSLWantWriteError, PROTOCOL_TLS_SERVER, PROTOCOL_TLS_CLIENT, Purpose, \
-    CERT_NONE, CERT_REQUIRED, _ASN1Object
+from ssl import SSLWantReadError, SSLWantWriteError, PROTOCOL_TLS, \
+    PROTOCOL_TLS_SERVER, PROTOCOL_TLS_CLIENT, Purpose, \
+    CERT_NONE, _ASN1Object
 import ssl as _original_ssl_
 
 copy_globals(_original_ssl_, globals())
