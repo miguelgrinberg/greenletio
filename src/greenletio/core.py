@@ -6,7 +6,7 @@ from greenlet import greenlet, getcurrent
 
 
 class GreenletBridge:
-    stop = object()
+    stop_bridge = object()
 
     def __init__(self):
         self.bridge_greenlet = None
@@ -15,7 +15,7 @@ class GreenletBridge:
         async def async_run():
             gl = getcurrent().parent
             coro = gl.switch()
-            while gl and coro != self.stop:  # pragma: no branch
+            while gl and coro != self.stop_bridge:  # pragma: no branch
                 try:
                     result = await coro
                 except:  # noqa: E722
@@ -46,7 +46,7 @@ class GreenletBridge:
 
     def stop(self):
         if self.bridge_greenlet:
-            self.bridge_greenlet.switch(self.stop)
+            self.bridge_greenlet.switch(self.stop_bridge)
             self.bridge_greenlet = None
 
 
