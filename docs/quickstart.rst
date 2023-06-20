@@ -140,6 +140,20 @@ The :func:`greenletio.patch_psycopg2` function configures the ``psycopg2``
 package to access Postgres databases in non-blocking mode. This function needs
 to be called once at the start of the application.
 
+Green Functions
+~~~~~~~~~~~~~~~
+
+The modules under ``greenletio.green`` are drop-in replacements of the Python
+standard library modules of the same name, implemented using the ``async_``,
+and ``await_`` primitives.
+
+The goal is to provide replacements for commonly used blocking functions in
+the standard library, so that code written in blocking style can be used
+asynchronously.
+
+Currently implemented modules are ``socket``, ``select``, ``selectors``,
+``ssl``, ``threading``, and ``time``.
+
 Automatic patching of Blocking Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -152,8 +166,3 @@ in the Python Standard Library patched to non-blocking versions::
 The ``-m`` option can be used to run a module::
 
    greenletio -m mymodule arg1 arg2
-
-Green Functions
-~~~~~~~~~~~~~~~
-
-
