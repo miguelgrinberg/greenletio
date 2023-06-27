@@ -85,12 +85,12 @@ class TestCore(unittest.TestCase):
 
         async def b():
             assert var.get() == 1
-            assert await a() == 1
+            assert (await a()) == 1
             assert var.get() == 2
-            assert await a() == 2
+            assert (await a()) == 2
             assert var.get() == 3
             var.set(42)
-            assert await a() == 42
+            assert (await a()) == 42
             assert var.get() == 43
 
         asyncio.get_event_loop().run_until_complete(b())

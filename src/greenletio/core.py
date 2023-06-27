@@ -38,7 +38,7 @@ class GreenletBridge:
             return self.bridge_greenlet
         if asyncio.get_event_loop().is_running():
             # we shouldn't be here if a loop is already running!
-            return greenlet.getcurrent()
+            return getcurrent()
 
         self.bridge_greenlet = greenlet(self.run)
         self.bridge_greenlet.switch()
@@ -145,8 +145,8 @@ def await_(coro_or_fn):
     """
     if asyncio.iscoroutine(coro_or_fn) or asyncio.isfuture(coro_or_fn):
         # we were given an awaitable --> await it
-        parent = greenlet.getcurrent().parent or bridge.start()
-        if parent == greenlet.getcurrent():
+        parent = getcurrent().parent or bridge.start()
+        if parent == getcurrent():
             raise RuntimeError(
                 'await_ cannot be called from the asyncio task')
         return parent.switch(coro_or_fn)
