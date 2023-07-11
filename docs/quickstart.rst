@@ -40,7 +40,7 @@ The ``async_`` function can also be used as a decorator::
    asyncio.run(async_function())
 
 Functions wrapped with ``async_`` run inside a greenlet and have the ability
-to await for asynchronous functions without blocking the asnycio loop.
+to await for asynchronous functions without blocking the asyncio loop.
 
 Awaiting in regular functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
