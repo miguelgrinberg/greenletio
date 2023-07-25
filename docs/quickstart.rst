@@ -4,9 +4,14 @@ Quick Start
 Installation
 ~~~~~~~~~~~~
 
-This package is installed with ``pip``::
+This package can be installed with ``pip``::
 
  pip install greenletio
+
+Or from `conda-forge <https://conda-forge.org>`_, with
+`micromamba <https://mamba.readthedocs.io/en/latest/installation.html#micromamba>`_::
+
+ micromamba install -c conda-forge greenletio
 
 Converting a Regular Function to Asynchronous
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
