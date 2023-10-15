@@ -65,7 +65,7 @@ class TestCore(unittest.TestCase):
             return arg
 
         async def d(arg):
-            assert await(c(arg)) == arg
+            assert (await c(arg)) == arg
             return await b(arg)
 
         assert asyncio.iscoroutinefunction(b)
@@ -103,7 +103,7 @@ class TestCore(unittest.TestCase):
         async def b(arg):
             with pytest.raises(RuntimeError) as error:
                 await a(arg)
-            assert type(error.value) == RuntimeError and \
+            assert isinstance(error.value, RuntimeError) and \
                 str(error.value) == '42'
 
         asyncio.get_event_loop().run_until_complete(b(42))
@@ -116,7 +116,7 @@ class TestCore(unittest.TestCase):
         def b(arg):
             with pytest.raises(RuntimeError) as error:
                 await_(a(arg))
-            assert type(error.value) == RuntimeError and \
+            assert isinstance(error.value, RuntimeError) and \
                 str(error.value) == '42'
 
         async def c(arg):
