@@ -1,5 +1,16 @@
 # greenletio change log
 
+**Release 0.11.0** - 2023-11-10
+
+- Add green versions of select and selectors modules ([commit](https://github.com/miguelgrinberg/greenletio/commit/1269447cc2e997a73dadb1977784b06c7fe914e4))
+- Added `greenletio` command to patch scripts from the CLI ([commit](https://github.com/miguelgrinberg/greenletio/commit/4e9e14eac237c4f720a1d16e7e14744d124d3209))
+- Address duplicated attribute name ([commit](https://github.com/miguelgrinberg/greenletio/commit/9f24d329b6dc62d9cb414ac6fd727d5453b81b20))
+- Fix typo [#13](https://github.com/miguelgrinberg/greenletio/issues/13) ([commit](https://github.com/miguelgrinberg/greenletio/commit/db38bd2c5315cd0b9d515665f19256424fe655ee)) (thanks **David Brochart**!)
+- Restore Green Functions section in the documentation ([commit](https://github.com/miguelgrinberg/greenletio/commit/b739cb1284bf3125f13e765d7c773cc776f60e40))
+- Address a few new linter errors ([commit](https://github.com/miguelgrinberg/greenletio/commit/e034bffaf4659539f54f9a0e985e27a76dca4706))
+- Migrate Python package metadata to pyproject.toml ([commit](https://github.com/miguelgrinberg/greenletio/commit/aa9b82da69408d8e6d8df5f43a02aa98797050a3))
+- Drop support for Python 3.6 ([commit](https://github.com/miguelgrinberg/greenletio/commit/1beef9814018770489dad22fb85c2149f31fc9e5))
+
 **Release 0.10.1** - 2023-04-21
 
 - Minor refactoring for added clarity ([commit](https://github.com/miguelgrinberg/greenletio/commit/8b7413866dfcb682e304814aa605ff5c7399ec64))
