@@ -1,5 +1,6 @@
 import asyncio
 import contextvars
+import inspect
 import unittest
 import pytest
 from greenletio import async_, await_
@@ -68,9 +69,9 @@ class TestCore(unittest.TestCase):
             assert (await c(arg)) == arg
             return await b(arg)
 
-        assert asyncio.iscoroutinefunction(b)
-        assert asyncio.iscoroutinefunction(c)
-        ret = asyncio.get_event_loop().run_until_complete(d(42))
+        assert inspect.iscoroutinefunction(b)
+        assert inspect.iscoroutinefunction(c)
+        ret = asyncio.run(d(42))
         assert ret == 42
         assert var == 42
 
@@ -93,7 +94,7 @@ class TestCore(unittest.TestCase):
             assert (await a()) == 42
             assert var.get() == 43
 
-        asyncio.get_event_loop().run_until_complete(b())
+        asyncio.run(b())
 
     def test_async_await_exception(self):
         @async_
@@ -106,7 +107,7 @@ class TestCore(unittest.TestCase):
             assert isinstance(error.value, RuntimeError) and \
                 str(error.value) == '42'
 
-        asyncio.get_event_loop().run_until_complete(b(42))
+        asyncio.run(b(42))
 
     def test_async_await_exception2(self):
         async def a(arg):
@@ -122,7 +123,7 @@ class TestCore(unittest.TestCase):
         async def c(arg):
             await b(arg)
 
-        asyncio.get_event_loop().run_until_complete(c(42))
+        asyncio.run(c(42))
 
     def test_async_await_exception3(self):
         var = contextvars.ContextVar('var', default=1)
@@ -139,7 +140,7 @@ class TestCore(unittest.TestCase):
                 pass
             assert var.get() == 2
 
-        asyncio.get_event_loop().run_until_complete(b())
+        asyncio.run(b())
 
     def test_gather_with_external_loop(self):
         var = 0
@@ -162,7 +163,7 @@ class TestCore(unittest.TestCase):
             tasks = [a(), b()]
             return await asyncio.gather(*tasks)
 
-        ret = asyncio.get_event_loop().run_until_complete(c())
+        ret = asyncio.run(c())
         assert ret == [1, 3] or ret == [3, 2]
 
     def test_await_raises_exception(self):
@@ -183,7 +184,7 @@ class TestCore(unittest.TestCase):
                 await a(42)
             assert str(exc.value) == 'foo'
 
-        asyncio.get_event_loop().run_until_complete(b())
+        asyncio.run(b())
 
     def test_await_after_exception(self):
         async def a():
@@ -200,7 +201,7 @@ class TestCore(unittest.TestCase):
                 assert str(exc) == 'foo'
             assert await_(b()) == 42
 
-        asyncio.get_event_loop().run_until_complete(c())
+        asyncio.run(c())
 
     def test_bad_await_with_external_loop(self):
         @async_
@@ -216,7 +217,7 @@ class TestCore(unittest.TestCase):
             await a()
             b()
 
-        asyncio.get_event_loop().run_until_complete(c())
+        asyncio.run(c())
         assert bridge.bridge_greenlet is None
 
     def bad_await_with_internal_loop(self):

@@ -36,9 +36,12 @@ class GreenletBridge:
     def start(self):
         if self.bridge_greenlet:
             return self.bridge_greenlet
-        if asyncio.get_event_loop().is_running():
-            # we shouldn't be here if a loop is already running!
-            return getcurrent()
+        try:
+            if asyncio.get_event_loop().is_running():
+                # we shouldn't be here if a loop is already running!
+                return getcurrent()
+        except RuntimeError:
+            pass
 
         self.bridge_greenlet = greenlet(self.run)
         self.bridge_greenlet.switch()
@@ -101,7 +104,7 @@ def async_(fn=None, *, with_context=False):
                     coro = gl.throw(*sys.exc_info())
                 else:
                     coro = gl.switch(result)
-            return coro
+            return coro  # pragma: no cover
 
         if with_context:
             gl.gr_context = contextvars.copy_context()

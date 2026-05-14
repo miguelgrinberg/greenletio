@@ -67,5 +67,5 @@ class TestSSL(unittest.TestCase):
         if sys.platform == 'win32':
             loop = asyncio.SelectorEventLoop()
             asyncio.set_event_loop(loop)
-        asyncio.get_event_loop().run_until_complete(main())
+        asyncio.run(main())
         assert var == b'HELLO'

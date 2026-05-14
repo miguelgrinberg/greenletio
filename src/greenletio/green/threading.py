@@ -243,7 +243,11 @@ class Thread(_original_threading_.Thread):
         async def bootstrap():
             await async_(self._bootstrap)()
 
-        self.task = asyncio.ensure_future(bootstrap())
+        try:
+            self.task = asyncio.ensure_future(bootstrap())
+        except RuntimeError:  # pragma: no cover
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            self.task = asyncio.ensure_future(bootstrap())
         self._started.set()
 
     def _set_ident(self):
