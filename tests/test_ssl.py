@@ -59,7 +59,6 @@ class TestSSL(unittest.TestCase):
             ssl_socket.close()
 
         async def main():
-            nonlocal var
             asyncio.create_task(server())
             asyncio.create_task(client())
             while var is None:
