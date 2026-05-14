@@ -28,6 +28,9 @@ Homepage = "https://github.com/miguelgrinberg/greenletio"
 docs = [
     "sphinx",
 ]
+dev = [
+    "tox",
+]
 
 [project.scripts]
 greenletio = "greenletio.cli:main"
