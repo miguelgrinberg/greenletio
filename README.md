@@ -1,6 +1,6 @@
 # greenletio
 
-[![Build status](https://github.com/miguelgrinberg/greenletio/workflows/build/badge.svg)](https://github.com/miguelgrinberg/greenletio/actions) [![codecov](https://codecov.io/gh/miguelgrinberg/greenletio/branch/main/graph/badge.svg)](https://codecov.io/gh/miguelgrinberg/greenletio)
+[![tests](https://code.miguelgrinberg.com/miguelgrinberg/greenletio/badges/workflows/tests.yml/badge.svg)](https://code.miguelgrinberg.com/miguelgrinberg/greenletio/actions)
 
 This project allows synchronous and asynchronous functions to be used together.
 Unlike other methods based on executors and thread or process pools,
@@ -54,7 +54,22 @@ def sync_function():
 
 ## Resources
 
-- [Documentation](http://greenletio.readthedocs.io/en/latest/)
+- [git](https://code.miguelgrinberg.com/miguelgrinberg/greenletio)
+- [Change Log](https://code.miguelgrinberg.com/miguelgrinberg/greenletio/src/branch/main/CHANGES.md)
+- [Documentation](https://greenletio.readthedocs.io/)
 - [PyPI](https://pypi.python.org/pypi/greenletio)
-- [Change Log](https://github.com/miguelgrinberg/greenletio/blob/main/CHANGES.md)
+- [Contributor's guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
 
+Sponsor this project
+--------------------
+
+This project relies on contributions from its users. If you benefit from it please consider making a single or ongoing monetary contribution in one of the following platforms:
+
+- [Github Sponsors](https://github.com/sponsors/miguelgrinberg)
+- [Patreon](https://patreon.com/miguelgrinberg)
+- [Buy me a Coffee](https://buymeacoffee.com/miguelgrinberg)
+- [thanks.dev](https://thanks.dev/u/gh/miguelgrinberg)
+- [PayPal](https://paypal.me/miguelgrinberg)
+
+Thank you!
